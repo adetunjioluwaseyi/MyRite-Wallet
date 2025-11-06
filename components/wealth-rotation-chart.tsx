@@ -15,30 +15,22 @@ export function WealthRotationChart() {
   ]
 
   const chartHeight = 300
-  const chartWidth = 800
-  const padding = 40
+  const chartWidth = 1000
+  const padding = 60
   const graphWidth = chartWidth - padding * 2
   const graphHeight = chartHeight - padding * 2
 
   const maxValue = 400
   const minValue = 0
 
-  const getX = (index: number) => padding + (index / (data.length - 1)) * graphWidth
-  const getY = (value: number) => chartHeight - padding - ((value - minValue) / (maxValue - minValue)) * graphHeight
-
-  const createPath = (values: number[]) => {
-    return values
-      .map((value, index) => {
-        const x = getX(index)
-        const y = getY(value)
-        return `${index === 0 ? "M" : "L"} ${x} ${y}`
-      })
-      .join(" ")
-  }
-
-  const dailyPath = createPath(data.map((d) => d.dailyGroup))
-  const weeklyPath = createPath(data.map((d) => d.weeklyGroup))
-  const monthlyPath = createPath(data.map((d) => d.monthlyGroup))
+  const barWidth = 20
+  const groupWidth = barWidth * 3 + 10 // 3 bars per group with 5px spacing between bars
+  const getX = (index: number, barIndex: number) => 
+    padding + (index * (groupWidth + 20)) + (barIndex * (barWidth + 5))
+  const getY = (value: number) => 
+    chartHeight - padding - ((value - minValue) / (maxValue - minValue)) * graphHeight
+  const getHeight = (value: number) => 
+    ((value - minValue) / (maxValue - minValue)) * graphHeight
 
   return (
     <div className="bg-card rounded-lg border border-border p-6">
@@ -73,7 +65,7 @@ export function WealthRotationChart() {
         {data.map((d, index) => (
           <text
             key={d.month}
-            x={getX(index)}
+            x={getX(index, 1)}
             y={chartHeight - padding + 20}
             fontSize="12"
             textAnchor="middle"
@@ -83,31 +75,33 @@ export function WealthRotationChart() {
           </text>
         ))}
 
-        {/* Lines */}
-        <path d={dailyPath} stroke="#D946EF" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        <path
-          d={weeklyPath}
-          stroke="#F97316"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d={monthlyPath}
-          stroke="#22C55E"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Data points */}
+        {/* Bars */}
         {data.map((d, index) => (
-          <g key={`points-${index}`}>
-            <circle cx={getX(index)} cy={getY(d.dailyGroup)} r="4" fill="#D946EF" />
-            <circle cx={getX(index)} cy={getY(d.weeklyGroup)} r="4" fill="#F97316" />
-            <circle cx={getX(index)} cy={getY(d.monthlyGroup)} r="4" fill="#22C55E" />
+          <g key={`bars-${index}`}>
+            {/* Daily Group Bar */}
+            <rect
+              x={getX(index, 0)}
+              y={getY(d.dailyGroup)}
+              width={barWidth}
+              height={getHeight(d.dailyGroup)}
+              fill="#D946EF"
+            />
+            {/* Weekly Group Bar */}
+            <rect
+              x={getX(index, 1)}
+              y={getY(d.weeklyGroup)}
+              width={barWidth}
+              height={getHeight(d.weeklyGroup)}
+              fill="#F97316"
+            />
+            {/* Monthly Group Bar */}
+            <rect
+              x={getX(index, 2)}
+              y={getY(d.monthlyGroup)}
+              width={barWidth}
+              height={getHeight(d.monthlyGroup)}
+              fill="#22C55E"
+            />
           </g>
         ))}
       </svg>

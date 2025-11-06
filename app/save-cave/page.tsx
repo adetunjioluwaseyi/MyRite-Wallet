@@ -11,12 +11,19 @@ export default function SaveCavePage() {
     <div className="flex bg-background min-h-screen">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="SaveCave" />
+        <Header />
         <main className="flex-1 p-8 overflow-auto">
-          <SaveCaveMetrics />
+          <section id="overview">
+            <SaveCaveMetrics />
+          </section>
+
           <div className="grid grid-cols-1 gap-6 mt-8">
-            <SaveCaveGroups />
-            <SaveCaveChart />
+            <section id="groups">
+              <SaveCaveGroups />
+            </section>
+            <section id="chart">
+              <SaveCaveChart />
+            </section>
           </div>
         </main>
       </div>

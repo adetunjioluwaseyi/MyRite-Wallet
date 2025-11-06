@@ -14,11 +14,17 @@ export default function WealthRotationPage() {
           <div className="max-w-7xl mx-auto space-y-6">
             <h1 className="text-3xl font-bold text-foreground">Wealth Rotation</h1>
 
-            <WealthRotationMetrics />
+            <section id="overview">
+              <WealthRotationMetrics />
+            </section>
 
-            <WealthRotationGroups />
+            <section id="groups">
+              <WealthRotationGroups />
+            </section>
 
-            <WealthRotationChart />
+            <section id="chart">
+              <WealthRotationChart />
+            </section>
           </div>
         </main>
       </div>

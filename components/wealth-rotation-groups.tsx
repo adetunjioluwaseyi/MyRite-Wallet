@@ -83,17 +83,19 @@ export function WealthRotationGroups() {
                   </div>
                 </td>
                 <td className="py-4 px-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-md border border-input bg-transparent hover:bg-accent">
+                  <button className="text-sm text-white-200 bg-purple hover:underline">view</button>
+                  
+                  {/* <DropdownMenu>
+                     <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-md border border-input bg-transparent hover:bg-accent">
                       <MoreHorizontal className="h-4 w-4" />
-                    </DropdownMenuTrigger>
+                    </DropdownMenuTrigger> 
                     <DropdownMenuContent align="center" sideOffset={4}>
                       <DropdownMenuItem>Daily Savings</DropdownMenuItem>
                       <DropdownMenuItem>Weekly Savings</DropdownMenuItem>
                       <DropdownMenuItem>Monthly Savings</DropdownMenuItem>
-                      {/* <DropdownMenuItem className="text-destructive">Delete Group</DropdownMenuItem> */}
+                      <DropdownMenuItem className="text-destructive">Delete Group</DropdownMenuItem>
                     </DropdownMenuContent>
-                  </DropdownMenu>
+                  </DropdownMenu> */}
                 </td>
               </tr>
             ))}

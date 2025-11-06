@@ -17,38 +17,26 @@ import { usePathname, useRouter } from "next/navigation"
 export function Sidebar({ currentPage }: { currentPage?: string }) {
   const pathname = usePathname()
   const router = useRouter()
-    const [expandedSections, setExpandedSections] = useState<string[]>(["wallet-management"])
+  const [expandedSections, setExpandedSections] = useState<string[]>(["wallet-management"])
 
-  const isDashboard = pathname === "/"
+  const isDashboard = pathname === "/dashboard"
 
-    const toggleSection = (section: string) => {
-    setExpandedSections(prev => 
-      prev.includes(section) 
-        ? prev.filter(s => s !== section)
-        : [...prev, section]
-    )
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => (prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]))
   }
-
-  const isExpanded = (section: string) => expandedSections.includes(section)
 
   const isExpanded = (section: string) => expandedSections.includes(section)
 
   return (
     <aside className="w-64 bg-card border-r border-border p-6 flex flex-col">
       <div className="flex items-center gap-2 mb-8">
-        <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-lg">M</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="font-bold text-foreground">MyRite</span>
-          <span className="text-xs text-muted-foreground">WALLET</span>
-        </div>
+        <img src="/logo.png" alt="MyRite Wallet Logo" className="h-10 w-auto" />
       </div>
 
       <nav className="space-y-2 flex-1">
         {/* Dashboard Link */}
         <a
-          href="/"
+          href="/dashboard"
           className={`w-full justify-start gap-3 rounded-full flex items-center px-4 py-2 transition-colors ${
             isDashboard
               ? "bg-primary text-primary-foreground"
@@ -88,28 +76,32 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
                     Wealth Rotation
                   </span>
                   <ChevronDown
-                    className={`w-3 h-3 transition-transform ${
-                      expandedSection === "wealth-rotation" ? "rotate-180" : ""
-                    }`}
+                    className={`w-3 h-3 transition-transform ${isExpanded("wealth-rotation") ? "rotate-180" : ""}`}
                   />
                 </button>
 
                 {isExpanded("wealth-rotation") && (
                   <div className="space-y-1 ml-2 pl-3">
                     <a
-                      href="/wealth-rotation"
+                      href="/wealth-rotation#overview"
+                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
+                    >
+                      Overview
+                    </a>
+                    <a
+                      href="/wealth-rotation#daily"
                       className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
                     >
                       Daily Group
                     </a>
                     <a
-                      href="/wealth-rotation"
+                      href="/wealth-rotation#weekly"
                       className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
                     >
                       Weekly Group
                     </a>
                     <a
-                      href="/wealth-rotation"
+                      href="/wealth-rotation#monthly"
                       className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
                     >
                       Monthly Group
@@ -133,26 +125,32 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
                     SaveCave
                   </span>
                   <ChevronDown
-                    className={`w-3 h-3 transition-transform ${expandedSection === "save-cave" ? "rotate-180" : ""}`}
+                    className={`w-3 h-3 transition-transform ${isExpanded("save-cave") ? "rotate-180" : ""}`}
                   />
                 </button>
 
-                {expandedSection === "save-cave" && (
+                {isExpanded("save-cave") && (
                   <div className="space-y-1 ml-2 pl-3">
                     <a
-                      href="/save-cave"
+                      href="/save-cave#overview"
+                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
+                    >
+                      Overview
+                    </a>
+                    <a
+                      href="/save-cave#flex-me"
                       className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
                     >
                       Flex Me
                     </a>
                     <a
-                      href="/save-cave"
+                      href="/save-cave#target-achievers"
                       className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
                     >
                       Target Achievers
                     </a>
                     <a
-                      href="/save-cave"
+                      href="/save-cave#instant-access"
                       className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
                     >
                       Instant Access
@@ -172,11 +170,11 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           >
             <span>User Management</span>
             <ChevronDown
-              className={`w-4 h-4 transition-transform ${expandedSection === "user-management" ? "rotate-180" : ""}`}
+              className={`w-4 h-4 transition-transform ${isExpanded("user-management") ? "rotate-180" : ""}`}
             />
           </button>
 
-          {expandedSection === "user-management" && (
+          {isExpanded("user-management") && (
             <div className="space-y-1 ml-2 mt-2 pl-4 border-l border-muted">
               <a
                 href="/view-wallets"
@@ -237,11 +235,11 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           >
             <span>Reports & Profile</span>
             <ChevronDown
-              className={`w-4 h-4 transition-transform ${expandedSection === "reports-profile" ? "rotate-180" : ""}`}
+              className={`w-4 h-4 transition-transform ${isExpanded("reports-profile") ? "rotate-180" : ""}`}
             />
           </button>
 
-          {expandedSection === "reports-profile" && (
+          {isExpanded("reports-profile") && (
             <div className="space-y-1 ml-2 mt-2 pl-4 border-l border-muted">
               {/* Reports */}
               <div className="space-y-1">
@@ -258,11 +256,11 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
                     Reports
                   </span>
                   <ChevronDown
-                    className={`w-3 h-3 transition-transform ${expandedSection === "reports" ? "rotate-180" : ""}`}
+                    className={`w-3 h-3 transition-transform ${isExpanded("reports") ? "rotate-180" : ""}`}
                   />
                 </button>
 
-                {expandedSection === "reports" && (
+                {isExpanded("reports") && (
                   <div className="space-y-1 ml-2 pl-3">
                     <a
                       href="/reports"
@@ -307,11 +305,11 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
                     Profile
                   </span>
                   <ChevronDown
-                    className={`w-3 h-3 transition-transform ${expandedSection === "profile" ? "rotate-180" : ""}`}
+                    className={`w-3 h-3 transition-transform ${isExpanded("profile") ? "rotate-180" : ""}`}
                   />
                 </button>
 
-                {expandedSection === "profile" && (
+                {isExpanded("profile") && (
                   <div className="space-y-1 ml-2 pl-3">
                     <a
                       href="/admin-edit"
@@ -326,7 +324,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
                       Create New Admin/User
                     </a>
                     <a
-                      href="/"
+                      href="/sign-out"
                       className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
                     >
                       Sign Out

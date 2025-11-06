@@ -1,9 +1,37 @@
 export function SaveCaveChart() {
+  // sample data (values in thousands, max 250)
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sept",
+    "Oct",
+    "Nov",
+    "Dec",
+  ]
+
+  const flexible = [80, 100, 90, 110, 60, 70, 120, 95, 85, 105, 98, 110]
+  const target = [60, 80, 70, 50, 90, 85, 75, 95, 70, 100, 120, 130]
+  const weekly = [70, 90, 85, 95, 80, 95, 60, 75, 95, 85, 105, 100]
+
+  const maxValue = 250 // corresponds to top of chart (250k)
+
+  const valueToY = (v: number) => {
+    // chart area maps values [0..maxValue] to y coords [260..20]
+    const height = 240 // 260 - 20
+    return 20 + (1 - v / maxValue) * height
+  }
+
   return (
     <div className="bg-card rounded-lg border border-border p-6">
       <h2 className="text-xl font-bold text-foreground mb-6">SaveCave Insights</h2>
 
-      {/* SVG Chart */}
+      {/* SVG Chart - Grouped Bar Chart */}
       <svg width="100%" height="300" viewBox="0 0 700 300" className="mb-4">
         {/* Grid lines */}
         {[0, 50, 100, 150, 200, 250].map((y) => (
@@ -42,29 +70,41 @@ export function SaveCaveChart() {
           </text>
         ))}
 
-        {/* Line 1 - Flexible (Red) */}
-        <polyline
-          points="80,220 130,200 180,190 230,210 280,150 330,170 380,140 430,160 480,200 530,180 580,210 630,220"
-          fill="none"
-          stroke="#ef4444"
-          strokeWidth="2"
-        />
+        {/* Grouped bars for each month (3 series) */}
+        {months.map((m, i) => {
+          const baseX = 80 + i * 50
+          const groupWidth = 30
+          const barWidth = 8
+          const gap = 4
 
-        {/* Line 2 - Target Achievers (Green) */}
-        <polyline
-          points="80,180 130,160 180,140 230,120 280,100 330,110 380,130 430,100 480,120 530,90 580,130 630,150"
-          fill="none"
-          stroke="#10b981"
-          strokeWidth="2"
-        />
+          const x1 = baseX - groupWidth / 2
+          const bars = [
+            { value: flexible[i], color: "#ef4444", offset: 0 },
+            { value: target[i], color: "#10b981", offset: barWidth + gap },
+            { value: weekly[i], color: "#a855f7", offset: 2 * (barWidth + gap) },
+          ]
 
-        {/* Line 3 - Flexible Weekly (Purple) */}
-        <polyline
-          points="80,200 130,170 180,160 230,180 280,130 330,150 380,110 430,140 480,180 530,160 580,190 630,200"
-          fill="none"
-          stroke="#a855f7"
-          strokeWidth="2"
-        />
+          return (
+            <g key={m}>
+              {bars.map((b, idx) => {
+                const barHeight = 260 - valueToY(b.value)
+                const x = x1 + b.offset
+                const y = valueToY(b.value)
+                return (
+                  <rect
+                    key={idx}
+                    x={x}
+                    y={y}
+                    width={barWidth}
+                    height={barHeight}
+                    fill={b.color}
+                    rx={2}
+                  />
+                )
+              })}
+            </g>
+          )
+        })}
       </svg>
 
       {/* Legend */}

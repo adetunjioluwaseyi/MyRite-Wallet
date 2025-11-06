@@ -3,64 +3,99 @@
 import { Card } from "@/components/ui/card"
 
 export function WealthRotationInsights() {
+  const data = [
+    { month: "Jan", dailyGroup: 70, weeklyGroup: 50, monthlyGroup: 30 },
+    { month: "Mar", dailyGroup: 170, weeklyGroup: 150, monthlyGroup: 130 },
+    { month: "May", dailyGroup: 200, weeklyGroup: 180, monthlyGroup: 160 },
+    { month: "Jul", dailyGroup: 250, weeklyGroup: 230, monthlyGroup: 210 },
+    { month: "Sept", dailyGroup: 230, weeklyGroup: 210, monthlyGroup: 190 },
+    { month: "Nov", dailyGroup: 170, weeklyGroup: 150, monthlyGroup: 130 },
+    { month: "Dec", dailyGroup: 120, weeklyGroup: 100, monthlyGroup: 80 },
+  ]
+
+  const chartHeight = 300
+  const chartWidth = 1200
+  const padding = 60
+  const barWidth = 30
+  const groupWidth = barWidth * 3 + 10 // 3 bars per group with 5px spacing between bars
+  
+  const maxValue = 300
+  const minValue = 0
+
+  const getX = (index: number, barIndex: number) => 
+    padding + (index * (groupWidth + 40)) + (barIndex * (barWidth + 5))
+  const getY = (value: number) => 
+    chartHeight - padding - ((value - minValue) / (maxValue - minValue)) * (chartHeight - padding * 2)
+  const getHeight = (value: number) => 
+    ((value - minValue) / (maxValue - minValue)) * (chartHeight - padding * 2)
+
   return (
     <Card className="p-6">
       <h2 className="text-xl font-bold text-foreground mb-6">Wealth Rotation Insights</h2>
       <div className="w-full h-80 flex items-end justify-between gap-2 px-4">
-        <svg viewBox="0 0 1200 300" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
           {/* Grid lines */}
-          <line x1="50" y1="250" x2="1150" y2="250" stroke="#e0e1e2" strokeWidth="1" />
-          <line x1="50" y1="200" x2="1150" y2="200" stroke="#e0e1e2" strokeWidth="1" strokeDasharray="3,3" />
-          <line x1="50" y1="150" x2="1150" y2="150" stroke="#e0e1e2" strokeWidth="1" strokeDasharray="3,3" />
-          <line x1="50" y1="100" x2="1150" y2="100" stroke="#e0e1e2" strokeWidth="1" strokeDasharray="3,3" />
-          <line x1="50" y1="50" x2="1150" y2="50" stroke="#e0e1e2" strokeWidth="1" strokeDasharray="3,3" />
+          {[0, 100, 200, 300].map((value) => (
+            <g key={value}>
+              <line
+                x1={padding}
+                y1={getY(value)}
+                x2={chartWidth - padding}
+                y2={getY(value)}
+                stroke="#e0e1e2"
+                strokeWidth="1"
+                strokeDasharray={value === 0 ? "" : "3,3"}
+              />
+              <text
+                x={padding - 10}
+                y={getY(value) + 4}
+                fontSize="12"
+                textAnchor="end"
+                fill="#737791"
+              >
+                {value}
+              </text>
+            </g>
+          ))}
 
-          {/* Daily Group line (purple) */}
-          <polyline
-            points="80,180 150,160 220,130 290,150 360,100 430,70 500,50 570,40 640,70 710,100 780,130 850,160 920,180 990,200 1060,220 1130,240"
-            fill="none"
-            stroke="#800080"
-            strokeWidth="3"
-          />
+          {/* Bars and Labels */}
+          {data.map((d, index) => (
+            <g key={`group-${index}`}>
+              {/* X-axis label */}
+              <text
+                x={getX(index, 1)}
+                y={chartHeight - padding + 20}
+                textAnchor="middle"
+                fontSize="12"
+                fill="#737791"
+              >
+                {d.month}
+              </text>
 
-          {/* Weekly Group line (coral) */}
-          <polyline
-            points="80,200 150,180 220,150 290,160 360,120 430,90 500,70 570,60 640,80 710,110 780,140 850,170 920,190 990,210 1060,230 1130,250"
-            fill="none"
-            stroke="#ff947a"
-            strokeWidth="3"
-          />
-
-          {/* Monthly Group line (green) */}
-          <polyline
-            points="80,220 150,200 220,170 290,180 360,140 430,110 500,90 570,80 640,100 710,130 780,160 850,190 920,210 990,230 1060,245 1130,260"
-            fill="none"
-            stroke="#3cd856"
-            strokeWidth="3"
-          />
-
-          {/* X-axis labels */}
-          <text x="80" y="280" textAnchor="middle" fontSize="12" fill="#737791">
-            Jan
-          </text>
-          <text x="220" y="280" textAnchor="middle" fontSize="12" fill="#737791">
-            Mar
-          </text>
-          <text x="360" y="280" textAnchor="middle" fontSize="12" fill="#737791">
-            May
-          </text>
-          <text x="500" y="280" textAnchor="middle" fontSize="12" fill="#737791">
-            Jul
-          </text>
-          <text x="640" y="280" textAnchor="middle" fontSize="12" fill="#737791">
-            Sept
-          </text>
-          <text x="780" y="280" textAnchor="middle" fontSize="12" fill="#737791">
-            Nov
-          </text>
-          <text x="920" y="280" textAnchor="middle" fontSize="12" fill="#737791">
-            Dec
-          </text>
+              {/* Bars */}
+              <rect
+                x={getX(index, 0)}
+                y={getY(d.dailyGroup)}
+                width={barWidth}
+                height={getHeight(d.dailyGroup)}
+                fill="#800080"
+              />
+              <rect
+                x={getX(index, 1)}
+                y={getY(d.weeklyGroup)}
+                width={barWidth}
+                height={getHeight(d.weeklyGroup)}
+                fill="#ff947a"
+              />
+              <rect
+                x={getX(index, 2)}
+                y={getY(d.monthlyGroup)}
+                width={barWidth}
+                height={getHeight(d.monthlyGroup)}
+                fill="#3cd856"
+              />
+            </g>
+          ))}
         </svg>
       </div>
       <div className="flex justify-center gap-6 mt-4">
