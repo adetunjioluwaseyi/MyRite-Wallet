@@ -10,7 +10,7 @@ export function SaveCaveGroups() {
   const groups = [
     {
       id: 1,
-      name: "Flex Me",
+      name: "Flexible Savings",
       icon: "📱",
       members: ["👤", "👤", "👤", "👤"],
       budget: "₦1m",

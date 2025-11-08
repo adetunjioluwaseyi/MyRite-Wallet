@@ -9,333 +9,221 @@ import {
   LayoutDashboard,
   Users,
   ChevronDown,
-  Settings,
-  UserPlus,
+  LogOut,
+  Mail,
+  Gift,
 } from "lucide-react"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 
 export function Sidebar({ currentPage }: { currentPage?: string }) {
   const pathname = usePathname()
-  const router = useRouter()
-  const [expandedSections, setExpandedSections] = useState<string[]>(["wallet-management"])
+  const [expandedItems, setExpandedItems] = useState<string[]>(["wealth-rotation", "save-cave"])
 
   const isDashboard = pathname === "/dashboard"
 
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => (prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]))
+  const toggleExpand = (item: string) => {
+    setExpandedItems((prev) => (prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]))
   }
 
-  const isExpanded = (section: string) => expandedSections.includes(section)
+  const isExpanded = (item: string) => expandedItems.includes(item)
 
   return (
-    <aside className="w-64 bg-card border-r border-border p-6 flex flex-col">
+    <aside className="w-64 bg-card border-r border-border p-6 flex flex-col h-screen">
+      {/* Logo */}
       <div className="flex items-center gap-2 mb-8">
         <img src="/logo.png" alt="MyRite Wallet Logo" className="h-10 w-auto" />
       </div>
 
-      <nav className="space-y-2 flex-1">
-        {/* Dashboard Link */}
+      {/* Navigation */}
+      <nav className="space-y-2 flex-1 overflow-y-auto">
         <a
           href="/dashboard"
-          className={`w-full justify-start gap-3 rounded-full flex items-center px-4 py-2 transition-colors ${
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
             isDashboard
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
         >
           <LayoutDashboard className="w-5 h-5" />
-          <span>Dashboard</span>
+          <span className="font-medium">Dashboard</span>
         </a>
 
-        {/* SECTION 1: WALLET MANAGEMENT */}
-        <div className="pt-4">
+        <div>
           <button
-            onClick={() => toggleSection("wallet-management")}
-            className="w-full justify-between flex items-center px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted rounded-lg transition-colors"
+            onClick={() => toggleExpand("wealth-rotation")}
+            className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-sm ${
+              pathname.includes("wealth-rotation")
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
           >
-            <span>Wallet Management</span>
+            <span className="flex items-center gap-3">
+              <TrendingUp className="w-5 h-5" />
+              <span className="font-medium">Wealth Rotation</span>
+            </span>
             <ChevronDown
-              className={`w-4 h-4 transition-transform ${isExpanded("wallet-management") ? "rotate-180" : ""}`}
+              className={`w-4 h-4 transition-transform ${isExpanded("wealth-rotation") ? "rotate-180" : ""}`}
             />
           </button>
 
-          {isExpanded("wallet-management") && (
-            <div className="space-y-1 ml-2 mt-2 pl-4 border-l border-muted">
-              {/* Wealth Rotation */}
-              <div className="space-y-1">
-                <button
-                  onClick={() => toggleSection("wealth-rotation")}
-                  className={`w-full justify-between flex items-center px-4 py-2 rounded-lg transition-colors text-sm ${
-                    pathname.includes("wealth-rotation")
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    Wealth Rotation
-                  </span>
-                  <ChevronDown
-                    className={`w-3 h-3 transition-transform ${isExpanded("wealth-rotation") ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {isExpanded("wealth-rotation") && (
-                  <div className="space-y-1 ml-2 pl-3">
-                    <a
-                      href="/wealth-rotation#overview"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Overview
-                    </a>
-                    <a
-                      href="/wealth-rotation#daily"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Daily Group
-                    </a>
-                    <a
-                      href="/wealth-rotation#weekly"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Weekly Group
-                    </a>
-                    <a
-                      href="/wealth-rotation#monthly"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Monthly Group
-                    </a>
-                  </div>
-                )}
-              </div>
-
-              {/* SaveCave */}
-              <div className="space-y-1">
-                <button
-                  onClick={() => toggleSection("save-cave")}
-                  className={`w-full justify-between flex items-center px-4 py-2 rounded-lg transition-colors text-sm ${
-                    pathname.includes("save-cave")
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <ShoppingCart className="w-4 h-4" />
-                    SaveCave
-                  </span>
-                  <ChevronDown
-                    className={`w-3 h-3 transition-transform ${isExpanded("save-cave") ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {isExpanded("save-cave") && (
-                  <div className="space-y-1 ml-2 pl-3">
-                    <a
-                      href="/save-cave#overview"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Overview
-                    </a>
-                    <a
-                      href="/save-cave#flex-me"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Flex Me
-                    </a>
-                    <a
-                      href="/save-cave#target-achievers"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Target Achievers
-                    </a>
-                    <a
-                      href="/save-cave#instant-access"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Instant Access
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* SECTION 2: USER MANAGEMENT */}
-        <div className="pt-4">
-          <button
-            onClick={() => toggleSection("user-management")}
-            className="w-full justify-between flex items-center px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted rounded-lg transition-colors"
-          >
-            <span>User Management</span>
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${isExpanded("user-management") ? "rotate-180" : ""}`}
-            />
-          </button>
-
-          {isExpanded("user-management") && (
-            <div className="space-y-1 ml-2 mt-2 pl-4 border-l border-muted">
+          {isExpanded("wealth-rotation") && (
+            <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
               <a
-                href="/view-wallets"
-                className={`w-full justify-start gap-3 flex items-center px-4 py-2 rounded-lg text-sm transition-colors ${
-                  pathname.includes("view-wallets")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                href="/wealth-rotation#overview"
+                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
               >
-                <Users className="w-4 h-4" />
-                <span>View User Wallet</span>
+                Overview
               </a>
-
               <a
-                href="/payment-approval"
-                className={`w-full justify-start gap-3 flex items-center px-4 py-2 rounded-lg text-sm transition-colors ${
-                  pathname.includes("payment-approval")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                href="/wealth-rotation#daily"
+                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
               >
-                <FileText className="w-4 h-4" />
-                <span>Payment Approval</span>
+                Daily Group
               </a>
-
               <a
-                href="/add-to-group"
-                className={`w-full justify-start gap-3 flex items-center px-4 py-2 rounded-lg text-sm transition-colors ${
-                  pathname.includes("add-to-group")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                href="/wealth-rotation#weekly"
+                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
               >
-                <UserPlus className="w-4 h-4" />
-                <span>Add to Group</span>
+                Weekly Group
               </a>
-
               <a
-                href="/notifications"
-                className={`w-full justify-start gap-3 flex items-center px-4 py-2 rounded-lg text-sm transition-colors ${
-                  pathname.includes("notifications")
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                href="/wealth-rotation#monthly"
+                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
               >
-                <Bell className="w-4 h-4" />
-                <span>Notifications/Complains</span>
+                Monthly Group
               </a>
             </div>
           )}
         </div>
 
-        {/* SECTION 3: REPORTS & PROFILE */}
-        <div className="pt-4">
+        <div>
           <button
-            onClick={() => toggleSection("reports-profile")}
-            className="w-full justify-between flex items-center px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted rounded-lg transition-colors"
+            onClick={() => toggleExpand("save-cave")}
+            className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-sm ${
+              pathname.includes("save-cave")
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
           >
-            <span>Reports & Profile</span>
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${isExpanded("reports-profile") ? "rotate-180" : ""}`}
-            />
+            <span className="flex items-center gap-3">
+              <Gift className="w-5 h-5" />
+              {/* <ShoppingCart className="w-5 h-5" /> */}
+              <span className="font-medium">SaveCave</span>
+            </span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded("save-cave") ? "rotate-180" : ""}`} />
           </button>
 
-          {isExpanded("reports-profile") && (
-            <div className="space-y-1 ml-2 mt-2 pl-4 border-l border-muted">
-              {/* Reports */}
-              <div className="space-y-1">
-                <button
-                  onClick={() => toggleSection("reports")}
-                  className={`w-full justify-between flex items-center px-4 py-2 rounded-lg transition-colors text-sm ${
-                    pathname.includes("reports")
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Reports
-                  </span>
-                  <ChevronDown
-                    className={`w-3 h-3 transition-transform ${isExpanded("reports") ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {isExpanded("reports") && (
-                  <div className="space-y-1 ml-2 pl-3">
-                    <a
-                      href="/reports"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      All Types of Wallets
-                    </a>
-                    <a
-                      href="/reports"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Users Report
-                    </a>
-                    <a
-                      href="/reports"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Payment Approval Reports
-                    </a>
-                    <a
-                      href="/reports"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Credit Approval Reports
-                    </a>
-                  </div>
-                )}
-              </div>
-
-              {/* Profile */}
-              <div className="space-y-1">
-                <button
-                  onClick={() => toggleSection("profile")}
-                  className={`w-full justify-between flex items-center px-4 py-2 rounded-lg transition-colors text-sm ${
-                    pathname.includes("profile")
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    Profile
-                  </span>
-                  <ChevronDown
-                    className={`w-3 h-3 transition-transform ${isExpanded("profile") ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {isExpanded("profile") && (
-                  <div className="space-y-1 ml-2 pl-3">
-                    <a
-                      href="/admin-edit"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Admin Edit
-                    </a>
-                    <a
-                      href="/create-admin"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Create New Admin/User
-                    </a>
-                    <a
-                      href="/sign-out"
-                      className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-                    >
-                      Sign Out
-                    </a>
-                  </div>
-                )}
-              </div>
+          {isExpanded("save-cave") && (
+            <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
+              <a
+                href="/save-cave#overview"
+                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
+              >
+                Overview
+              </a>
+              <a
+                href="/save-cave#flex-me"
+                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
+              >
+                Flexible Savings
+              </a>
+              <a
+                href="/save-cave#target-achievers"
+                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
+              >
+                Target Achievers
+              </a>
+              <a
+                href="/save-cave#instant-access"
+                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
+              >
+                Instant Access
+              </a>
             </div>
           )}
         </div>
+
+        <a
+          href="/view-wallets"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("view-wallets")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <Users className="w-5 h-5" />
+          <span className="font-medium">View Wallets</span>
+        </a>
+
+        <a
+          href="/payment-approval"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("payment-approval")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span className="font-medium">Payment Approvals</span>
+        </a>
+
+        <a
+          href="/add-to-group"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("add-to-group")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <Users className="w-5 h-5" />
+          <span className="font-medium">Add to Group</span>
+        </a>
+
+        <a
+          href="/reports"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("reports")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span className="font-medium">Reports</span>
+        </a>
+
+        <a
+          href="/admin-edit"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("send-messages")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <Users  className="w-5 h-5" />
+          <span className="font-medium">Profile</span>
+        </a>
+
+        <a
+          href="/notifications"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("notifications")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <Bell className="w-5 h-5" />
+          <span className="font-medium">Notifications</span>
+        </a>
       </nav>
+
+      {/* Sign Out Button */}
+      <a
+        href="/"
+        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+      >
+        <LogOut className="w-5 h-5" />
+        <span className="font-medium">Sign Out</span>
+      </a>
     </aside>
   )
 }

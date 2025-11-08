@@ -3,63 +3,74 @@
 import { useState } from "react"
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
-import { Search, Plus } from "lucide-react"
+import { Search, Check, X } from "lucide-react"
 
-interface User {
+interface JoinRequest {
   id: string
   name: string
-  email: string
-  status: string
-}
-
-interface Group {
-  id: string
-  name: string
-  type: string
-  members: number
-  selected?: boolean
+  income: string
+  channel: string
+  status: "pending" | "approved" | "declined"
 }
 
 export default function AddToGroupPage() {
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
-  const [selectedGroups, setSelectedGroups] = useState<string[]>([])
-  const [searchUser, setSearchUser] = useState("")
-  const [searchGroup, setSearchGroup] = useState("")
+  const [requests, setRequests] = useState<JoinRequest[]>([
+    {
+      id: "1",
+      name: "Taiwo Adekola",
+      income: "₦150,000",
+      channel: "Daily Savings",
+      status: "pending",
+    },
+    {
+      id: "2",
+      name: "Kehinde Adekola",
+      income: "₦200,000",
+      channel: "Weekly Savings",
+      status: "pending",
+    },
+    {
+      id: "3",
+      name: "James Oladipo",
+      income: "₦175,000",
+      channel: "Flex Me",
+      status: "pending",
+    },
+    {
+      id: "4",
+      name: "Toyo Adesola",
+      income: "₦120,000",
+      channel: "Target Achievers",
+      status: "pending",
+    },
+    {
+      id: "5",
+      name: "Damilola Olaboyo",
+      income: "₦300,000",
+      channel: "Instant Access",
+      status: "pending",
+    },
+  ])
 
-  const users: User[] = [
-    { id: "1", name: "Taiwo Adekola", email: "taiwo@example.com", status: "Active" },
-    { id: "2", name: "Kehinde Adekola", email: "kehinde@example.com", status: "Active" },
-    { id: "3", name: "James Oladipo", email: "james@example.com", status: "Active" },
-    { id: "4", name: "Toyo Adesola", email: "toyo@example.com", status: "Suspended" },
-    { id: "5", name: "Damilola Olaboyo", email: "damilola@example.com", status: "Active" },
-  ]
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const groups: Group[] = [
-    { id: "1", name: "Daily Savings", type: "Wealth Rotation", members: 45 },
-    { id: "2", name: "Weekly Savings", type: "Wealth Rotation", members: 32 },
-    { id: "3", name: "Flex Me", type: "SaveCave", members: 28 },
-    { id: "4", name: "Target Achievers", type: "SaveCave", members: 56 },
-    { id: "5", name: "Instant Access", type: "SaveCave", members: 41 },
-  ]
-
-  const filteredUsers = users.filter((u) => u.name.toLowerCase().includes(searchUser.toLowerCase()))
-  const filteredGroups = groups.filter((g) => g.name.toLowerCase().includes(searchGroup.toLowerCase()))
-
-  const toggleUser = (id: string) => {
-    setSelectedUsers((prev) => (prev.includes(id) ? prev.filter((u) => u !== id) : [...prev, id]))
+  const handleApprove = (id: string) => {
+    setRequests((prev) => prev.map((req) => (req.id === id ? { ...req, status: "approved" } : req)))
   }
 
-  const toggleGroup = (id: string) => {
-    setSelectedGroups((prev) => (prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]))
+  const handleDecline = (id: string) => {
+    setRequests((prev) => prev.map((req) => (req.id === id ? { ...req, status: "declined" } : req)))
   }
 
-  const handleAddToGroup = () => {
-    if (selectedUsers.length > 0 && selectedGroups.length > 0) {
-      console.log("[v0] Adding users to groups:", { users: selectedUsers, groups: selectedGroups })
-      setSelectedUsers([])
-      setSelectedGroups([])
-    }
-  }
+  const filteredRequests = requests.filter(
+    (req) =>
+      req.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      req.channel.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
+  const pendingRequests = filteredRequests.filter((req) => req.status === "pending")
+  const approvedRequests = filteredRequests.filter((req) => req.status === "approved")
+  const declinedRequests = filteredRequests.filter((req) => req.status === "declined")
 
   return (
     <div className="flex h-screen bg-background">
@@ -68,118 +79,153 @@ export default function AddToGroupPage() {
         <Header />
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-foreground mb-8">Add Users to Group</h1>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Users Selection */}
-              <div className="bg-card rounded-lg border border-border p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">Select Users</h2>
-
-                <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg mb-4 border border-border">
-                  <Search size={18} className="text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search users..."
-                    value={searchUser}
-                    onChange={(e) => setSearchUser(e.target.value)}
-                    className="flex-1 bg-transparent outline-none text-sm"
-                  />
-                </div>
-
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {filteredUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg cursor-pointer"
-                      onClick={() => toggleUser(user.id)}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.includes(user.id)}
-                        onChange={() => toggleUser(user.id)}
-                        className="w-4 h-4 accent-primary"
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium text-sm text-foreground">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      </div>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${user.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                      >
-                        {user.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {selectedUsers.length > 0 && (
-                  <div className="mt-4 p-3 bg-primary/10 rounded-lg">
-                    <p className="text-sm font-medium text-primary">{selectedUsers.length} user(s) selected</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Groups Selection */}
-              <div className="bg-card rounded-lg border border-border p-6">
-                <h2 className="text-xl font-bold text-foreground mb-4">Select Groups</h2>
-
-                <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg mb-4 border border-border">
-                  <Search size={18} className="text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search groups..."
-                    value={searchGroup}
-                    onChange={(e) => setSearchGroup(e.target.value)}
-                    className="flex-1 bg-transparent outline-none text-sm"
-                  />
-                </div>
-
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {filteredGroups.map((group) => (
-                    <div
-                      key={group.id}
-                      className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg cursor-pointer"
-                      onClick={() => toggleGroup(group.id)}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedGroups.includes(group.id)}
-                        onChange={() => toggleGroup(group.id)}
-                        className="w-4 h-4 accent-primary"
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium text-sm text-foreground">{group.name}</p>
-                        <p className="text-xs text-muted-foreground">{group.type}</p>
-                      </div>
-                      <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full">
-                        {group.members} members
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {selectedGroups.length > 0 && (
-                  <div className="mt-4 p-3 bg-primary/10 rounded-lg">
-                    <p className="text-sm font-medium text-primary">{selectedGroups.length} group(s) selected</p>
-                  </div>
-                )}
-              </div>
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-bold text-foreground">Add to Group Requests</h1>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 mt-8 justify-end">
-              <button className="px-6 py-2 border border-border rounded-lg text-foreground font-medium hover:bg-muted">
-                Cancel
-              </button>
-              <button
-                onClick={handleAddToGroup}
-                disabled={selectedUsers.length === 0 || selectedGroups.length === 0}
-                className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <Plus size={18} />
-                Add to Group
-              </button>
+            {/* Search Bar */}
+            <div className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-lg mb-6 max-w-md">
+              <Search size={18} className="text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search user or channel..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 bg-transparent outline-none text-sm"
+              />
             </div>
+
+            {/* Pending Requests */}
+            {pendingRequests.length > 0 && (
+              <div className="bg-card border border-border rounded-lg overflow-hidden mb-8">
+                <div className="px-6 py-4 bg-primary/5 border-b border-border">
+                  <h2 className="text-lg font-semibold text-foreground">Pending Requests ({pendingRequests.length})</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">NAME</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">INCOME</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">
+                          INTENDED CHANNEL
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-muted-foreground">ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingRequests.map((request) => (
+                        <tr key={request.id} className="border-b border-border hover:bg-muted/50">
+                          <td className="px-6 py-4 text-sm font-medium text-foreground">{request.name}</td>
+                          <td className="px-6 py-4 text-sm text-foreground">{request.income}</td>
+                          <td className="px-6 py-4 text-sm text-foreground">{request.channel}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleApprove(request.id)}
+                                className="flex items-center gap-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium text-sm"
+                              >
+                                <Check size={16} />
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleDecline(request.id)}
+                                className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm"
+                              >
+                                <X size={16} />
+                                Decline
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Approved Requests */}
+            {approvedRequests.length > 0 && (
+              <div className="bg-card border border-border rounded-lg overflow-hidden mb-8">
+                <div className="px-6 py-4 bg-green-50 border-b border-border">
+                  <h2 className="text-lg font-semibold text-green-900">
+                    Approved Requests ({approvedRequests.length})
+                  </h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">NAME</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">INCOME</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">
+                          CHANNEL JOINED
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-muted-foreground">STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {approvedRequests.map((request) => (
+                        <tr key={request.id} className="border-b border-border hover:bg-muted/50">
+                          <td className="px-6 py-4 text-sm font-medium text-foreground">{request.name}</td>
+                          <td className="px-6 py-4 text-sm text-foreground">{request.income}</td>
+                          <td className="px-6 py-4 text-sm text-foreground">{request.channel}</td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                              Approved
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Declined Requests */}
+            {declinedRequests.length > 0 && (
+              <div className="bg-card border border-border rounded-lg overflow-hidden">
+                <div className="px-6 py-4 bg-red-50 border-b border-border">
+                  <h2 className="text-lg font-semibold text-red-900">Declined Requests ({declinedRequests.length})</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/30">
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">NAME</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">INCOME</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground">
+                          REQUESTED CHANNEL
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-muted-foreground">STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {declinedRequests.map((request) => (
+                        <tr key={request.id} className="border-b border-border hover:bg-muted/50">
+                          <td className="px-6 py-4 text-sm font-medium text-foreground">{request.name}</td>
+                          <td className="px-6 py-4 text-sm text-foreground">{request.income}</td>
+                          <td className="px-6 py-4 text-sm text-foreground">{request.channel}</td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                              Declined
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {requests.length === 0 && (
+              <div className="bg-card border border-border rounded-lg p-12 text-center">
+                <p className="text-muted-foreground text-lg">No join requests at this time</p>
+              </div>
+            )}
           </div>
         </main>
       </div>
