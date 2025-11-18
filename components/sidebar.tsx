@@ -3,29 +3,28 @@
 import { useState } from "react"
 import {
   TrendingUp,
-  ShoppingCart,
   FileText,
   Bell,
   LayoutDashboard,
   Users,
   ChevronDown,
   LogOut,
-  Mail,
   Gift,
 } from "lucide-react"
 import { usePathname } from "next/navigation"
 
 export function Sidebar({ currentPage }: { currentPage?: string }) {
   const pathname = usePathname()
-  const [expandedItems, setExpandedItems] = useState<string[]>(["wealth-rotation", "save-cave"])
+  // Track only one expanded item at a time
+  const [expandedItem, setExpandedItem] = useState<string | null>(null)
 
   const isDashboard = pathname === "/dashboard"
 
   const toggleExpand = (item: string) => {
-    setExpandedItems((prev) => (prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]))
+    setExpandedItem((prev) => (prev === item ? null : item))
   }
 
-  const isExpanded = (item: string) => expandedItems.includes(item)
+  const isExpanded = (item: string) => expandedItem === item
 
   return (
     <aside className="w-64 bg-card border-r border-border p-6 flex flex-col h-screen">
@@ -36,6 +35,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
 
       {/* Navigation */}
       <nav className="space-y-2 flex-1 overflow-y-auto">
+        {/* Dashboard */}
         <a
           href="/dashboard"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
@@ -48,6 +48,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           <span className="font-medium">Dashboard</span>
         </a>
 
+        {/* Wealth Rotation Dropdown */}
         <div>
           <button
             onClick={() => toggleExpand("wealth-rotation")}
@@ -62,40 +63,31 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
               <span className="font-medium">Wealth Rotation</span>
             </span>
             <ChevronDown
-              className={`w-4 h-4 transition-transform ${isExpanded("wealth-rotation") ? "rotate-180" : ""}`}
+              className={`w-4 h-4 transition-transform ${
+                isExpanded("wealth-rotation") ? "rotate-180" : ""
+              }`}
             />
           </button>
 
           {isExpanded("wealth-rotation") && (
             <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
-              <a
-                href="/wealth-rotation#overview"
-                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-              >
+              <a href="/wealth-rotation#overview" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Overview
               </a>
-              <a
-                href="/wealth-rotation#daily"
-                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-              >
+              <a href="/wealth-rotation#daily" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Daily Group
               </a>
-              <a
-                href="/wealth-rotation#weekly"
-                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-              >
+              <a href="/wealth-rotation#weekly" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Weekly Group
               </a>
-              <a
-                href="/wealth-rotation#monthly"
-                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-              >
+              <a href="/wealth-rotation#monthly" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Monthly Group
               </a>
             </div>
           )}
         </div>
 
+        {/* SaveCave Dropdown */}
         <div>
           <button
             onClick={() => toggleExpand("save-cave")}
@@ -107,42 +99,34 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           >
             <span className="flex items-center gap-3">
               <Gift className="w-5 h-5" />
-              {/* <ShoppingCart className="w-5 h-5" /> */}
               <span className="font-medium">SaveCave</span>
             </span>
-            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded("save-cave") ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${
+                isExpanded("save-cave") ? "rotate-180" : ""
+              }`}
+            />
           </button>
 
           {isExpanded("save-cave") && (
             <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
-              <a
-                href="/save-cave#overview"
-                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-              >
+              <a href="/save-cave#overview" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Overview
               </a>
-              <a
-                href="/save-cave#flex-me"
-                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-              >
+              <a href="/save-cave#flex-me" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Flexible Savings
               </a>
-              <a
-                href="/save-cave#target-achievers"
-                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-              >
+              <a href="/save-cave#target-achievers" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Target Achievers
               </a>
-              <a
-                href="/save-cave#instant-access"
-                className="text-xs text-muted-foreground hover:text-foreground block px-2 py-1 rounded hover:bg-muted"
-              >
+              <a href="/save-cave#instant-access" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Instant Access
               </a>
             </div>
           )}
         </div>
 
+        {/* Other Links */}
         <a
           href="/view-wallets"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
@@ -194,12 +178,12 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         <a
           href="/admin-edit"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
-            pathname.includes("send-messages")
+            pathname.includes("admin-edit")
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
         >
-          <Users  className="w-5 h-5" />
+          <Users className="w-5 h-5" />
           <span className="font-medium">Profile</span>
         </a>
 
@@ -216,7 +200,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         </a>
       </nav>
 
-      {/* Sign Out Button */}
+      {/* Sign Out */}
       <a
         href="/"
         className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
