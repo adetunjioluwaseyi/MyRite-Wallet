@@ -71,16 +71,16 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
 
           {isExpanded("wealth-rotation") && (
             <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
-              <a href="/wealth-rotation#overview" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+              <a href="/wealth-rotation/overview" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Overview
               </a>
-              <a href="/wealth-rotation#daily" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+              <a href="/wealth-rotation/daily" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Daily Group
               </a>
-              <a href="/wealth-rotation#weekly" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+              <a href="/wealth-rotation/weekly" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Weekly Group
               </a>
-              <a href="/wealth-rotation#monthly" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+              <a href="/wealth-rotation/monthly" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Monthly Group
               </a>
             </div>
@@ -110,16 +110,16 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
 
           {isExpanded("save-cave") && (
             <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
-              <a href="/save-cave#overview" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+              <a href="/save-cave/overview" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Overview
               </a>
-              <a href="/save-cave#flex-me" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+              <a href="/save-cave/flexible-savings" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Flexible Savings
               </a>
-              <a href="/save-cave#target-achievers" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+              <a href="/save-cave/target-achievers" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Target Achievers
               </a>
-              <a href="/save-cave#instant-access" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+              <a href="/save-cave/instant-access" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Instant Access
               </a>
             </div>
@@ -127,7 +127,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         </div>
 
         {/* Other Links */}
-        <a
+        {/* <a
           href="/view-wallets"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
             pathname.includes("view-wallets")
@@ -137,7 +137,46 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         >
           <Users className="w-5 h-5" />
           <span className="font-medium">View Wallets</span>
-        </a>
+        </a> */}
+
+        {/* view wallet Dropdown */}
+        <div>
+          <button
+            onClick={() => toggleExpand("view-wallets")}
+            className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-sm ${
+              pathname.includes("view-wallets")
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <Gift className="w-5 h-5" />
+              <span className="font-medium">View Wallets</span>
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${
+                isExpanded("view-wallets") ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {isExpanded("view-wallets") && (
+            <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
+              <a href="/view-wallets" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+                View Wallet
+              </a>
+              <a href="/customer" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+                All Customers
+              </a>
+              {/* <a href="/save-cave/target-achievers" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+                Target Achievers
+              </a>
+              <a href="/save-cave/instant-access" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+                Instant Access
+              </a> */}
+            </div>
+          )}
+        </div>
 
         <a
           href="/payment-approval"
@@ -198,6 +237,30 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           <Bell className="w-5 h-5" />
           <span className="font-medium">Notifications</span>
         </a>
+
+        <a
+          href="/kyc"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("kyc")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <Bell className="w-5 h-5" />
+          <span className="font-medium">KYC</span>
+        </a>
+
+        {/* <a
+          href="/customer"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("customer")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <Bell className="w-5 h-5" />
+          <span className="font-medium">All-Customers</span>
+        </a> */}
       </nav>
 
       {/* Sign Out */}

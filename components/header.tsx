@@ -1,8 +1,20 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Search, Bell, ChevronDown } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 
 export function Header() {
+  const [userName, setUserName] = useState("")
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("userName")
+    if (storedName) {
+      setUserName(storedName)
+    }
+  }, [])
+
   return (
     <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
       <div className="flex items-center gap-4 flex-1">
@@ -30,10 +42,12 @@ export function Header() {
         <div className="flex items-center gap-3">
           <Avatar className="w-10 h-10">
             <AvatarImage src="/user-avatar.jpg" />
-            <AvatarFallback>DA</AvatarFallback>
+            <AvatarFallback>{userName ? userName[0] : "U"}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-foreground">David</span>
+            <span className="text-sm font-medium text-foreground">
+              {userName || "Guest"}
+            </span>
             <span className="text-xs text-muted-foreground">Admin</span>
           </div>
           <ChevronDown className="w-4 h-4 text-muted-foreground" />

@@ -7,6 +7,7 @@ import { SavingsRotationInsights } from "@/components/savings-rotation-insights"
 import { InstanceAccessInsights } from "@/components/instance-access-insights"
 import { TopWallets } from "@/components/top-wallets"
 import { Notifications } from "@/components/notifications"
+//import {Kyc} from "@/components/kyc"
 
 export default function Dashboard() {
   return (
