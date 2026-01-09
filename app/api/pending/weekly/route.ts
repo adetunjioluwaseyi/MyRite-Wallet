@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const response = await fetch("http://94.72.111.23:2000/myritewallet/v1/ADMIN/WEEKLY/VIEW", {
+    const response = await fetch("http://94.72.111.23:2000/myritewallet/v1/ADMIN/GROUP/WEEKLY/VIEW", {
       method: "GET",
       headers: { accept: "application/json" },
     });

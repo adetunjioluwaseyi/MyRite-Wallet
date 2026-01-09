@@ -1,19 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { TargetAchieversMetrics } from "./target-achievers-metrics"
 
 interface JoinRequest {
   targetName: string
   id: string
   name: string
   mobile: string
-  salary: string
+  salary: number   // ✅ make salary numeric
   groupCode: string
-  // status: "pending" | "approved" | "declined"
 }
-
 
 export function TargetAchieversGroups() {
   const [requests, setRequests] = useState<JoinRequest[]>([])
@@ -27,18 +24,32 @@ export function TargetAchieversGroups() {
         if (!response.ok) throw new Error("Failed to fetch requests")
 
         const json = await response.json()
-        console.log("API response:", json)
-
         const items = Array.isArray(json.details) ? json.details : []
 
-        const formatted: JoinRequest[] = items.map((item: any) => ({
-          id: item.mobile ?? "",
-          name: item.name ?? "Unknown",
-          mobile: item.mobile ?? "N/A",
-          salary: item.salary ?? "N/A",
-          groupCode: item.groupCode ?? "N/A",
-          targetName: item.targetName ?? "N/A",
-        }))
+        // const formatted: JoinRequest[] = items.map((item: any) => ({
+        //   id: item.mobile ?? "",
+        //   name: item.name ?? "Unknown",
+        //   mobile: item.mobile ?? "N/A",
+        //   salary: Number(item.salary) || 0,   // ✅ convert to number
+        //   groupCode: item.groupCode ?? "N/A",
+        //   targetName: item.targetName ?? "N/A",
+        // }))
+
+        const formatted: JoinRequest[] = items.map((item: any) => {
+  // Log the raw salary value from the API
+  console.log("Raw salary from API:", item.salary, "Type:", typeof item.salary)
+
+  return {
+    id: item.mobile ?? "",
+    name: item.name ?? "Unknown",
+    mobile: item.mobile ?? "N/A",
+    // Convert safely: only parse if it's a valid number string
+    salary: item.salary && !isNaN(Number(item.salary)) ? Number(item.salary) : 0,
+    groupCode: item.groupCode ?? "N/A",
+    targetName: item.targetName ?? "N/A",
+  }
+})
+
 
         setRequests(formatted)
       } catch (err: any) {
@@ -51,82 +62,41 @@ export function TargetAchieversGroups() {
     fetchRequests()
   }, [])
 
-  // ✅ Approve action with backend call
-  const handleApprove = async (id: string) => {
-    try {
-      const response = await fetch("http://94.72.111.23:2000/myritewallet/v1/TARGET/VIEW", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: id }),
-      })
-      if (!response.ok) throw new Error("Failed to approve request")
-
-      // Update UI
-      setRequests((prev) =>
-        prev.map((req) => (req.id === id ? { ...req, status: "approved" } : req))
-      )
-    } catch (err) {
-      console.error("Approve failed:", err)
-      alert("Failed to approve request")
-    }
-  }
-
-  // ✅ Decline action with backend call
-  const handleDecline = async (id: string) => {
-    try {
-      const response = await fetch("http://94.72.111.23:2000/myritewallet/v1/TARGET/VIEW", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: id }),
-      })
-      if (!response.ok) throw new Error("Failed to decline request")
-
-      // Update UI
-      setRequests((prev) =>
-        prev.map((req) => (req.id === id ? { ...req, status: "declined" } : req))
-      )
-    } catch (err) {
-      console.error("Decline failed:", err)
-      alert("Failed to decline request")
-    }
-  }
+  const totalBalance = requests.reduce((sum, req) => sum + req.salary, 0)
 
   if (loading) return <p className="p-6">Loading requests...</p>
   if (error) return <p className="p-6 text-red-600">Error: {error}</p>
+
   return (
     <div className="bg-card rounded-lg border border-border p-6">
       <h2 className="text-xl font-bold text-foreground mb-6">Target Achievers Groups</h2>
-      
-      <div>Table for Target Achievers</div>
-      <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">NAME</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">MOBILE</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">SALARY</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">GROUPCODE</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">TARGETNAME</th>
+
+      {/* Metrics card */}
+      <TargetAchieversMetrics totalBalance={totalBalance} />
+
+      {/* Table */}
+      <table className="w-full mt-6">
+        <thead>
+          <tr className="border-b border-border">
+            <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">NAME</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">MOBILE</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">SALARY</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">GROUPCODE</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">TARGETNAME</th>
+          </tr>
+        </thead>
+        <tbody>
+          {requests.map((req) => (
+            <tr key={req.id}>
+              <td className="px-4 py-2 border">{req.name}</td>
+              <td className="px-4 py-2 border">{req.mobile}</td>
+              <td className="px-4 py-2 border">{req.salary.toLocaleString()}</td>
+              <td className="px-4 py-2 border">{req.groupCode}</td>
+              <td className="px-4 py-2 border">{req.targetName}</td>
             </tr>
-          </thead>
-          <tbody>
-                {requests.map((req) => (
-                  <tr key={req.id}>
-                    <td className="px-4 py-2 border">{req.name}</td>
-                    <td className="px-4 py-2 border">{req.mobile}</td>
-                    <td className="px-4 py-2 border">{req.salary}</td>
-                    <td className="px-4 py-2 border">{req.groupCode}</td>
-                    <td className="px-4 py-2 border">{req.targetName}</td>
-                    <td className="px-4 py-2 border">
-                      
-                     
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-          
-        </table>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
-} 
-
-
+}
