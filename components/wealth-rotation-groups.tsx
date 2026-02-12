@@ -5,6 +5,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal } from "lucide-react"
+import Link from "next/link"
 
 export function WealthRotationGroups() {
   const groups = [
@@ -83,7 +84,9 @@ export function WealthRotationGroups() {
                   </div>
                 </td>
                 <td className="py-4 px-4">
-                  <button className="text-sm text-white-200 bg-purple hover:underline">view</button>
+                  <Link href={`/wealth-rotation/${group.name.toLowerCase()}`} className="text-sm text-purple-600 hover:underline" > View </Link>
+
+                  {/* <button className="text-sm text-white-200 bg-purple hover:underline">view</button> */}
                   
                   {/* <DropdownMenu>
                      <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-md border border-input bg-transparent hover:bg-accent">

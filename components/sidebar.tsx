@@ -168,6 +168,12 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
               <a href="/customer" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 All Customers
               </a>
+              <a href="/group" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+                All Groups
+              </a>
+              <a href="/tags" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+                All Tags
+              </a>
               {/* <a href="/save-cave/target-achievers" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 Target Achievers
               </a>

@@ -5,6 +5,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal } from "lucide-react"
+import Link from "next/link"
 
 export function SaveCaveGroups() {
   const groups = [
@@ -88,7 +89,8 @@ export function SaveCaveGroups() {
                   </div>
                 </td>
                 <td className="px-4 py-4">
-                  <button className="text-sm text-white-200 bg-purple hover:underline">view</button>
+                  <Link href={`/save-cave/${group.name.toLowerCase()}`} className="text-sm text-purple-600 hover:underline" > View </Link>
+                  {/* <button className="text-sm text-white-200 bg-purple hover:underline">view</button> */}
                   {/* <DropdownMenu>
                     <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-md border border-input bg-transparent hover:bg-accent">
                       <MoreHorizontal className="h-4 w-4" />
