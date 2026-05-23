@@ -91,8 +91,6 @@ export default function ViewWalletsPage() {
 }
 
 
-
-
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />

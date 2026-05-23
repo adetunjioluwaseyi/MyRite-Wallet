@@ -209,6 +209,42 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         </a>
 
         <a
+          href="/assign-pack-number"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("assign-pack-number")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <Users className="w-5 h-5" />
+          <span className="font-medium">Assign Pack Number</span>
+        </a>
+
+        {/* <a
+          href="/assign-user-to-group"
+          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            pathname.includes("assign-user-to-group")
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+        >
+          <Users className="w-5 h-5" />
+          <span className="font-medium">Assign User to Group</span>
+        </a> */}
+
+          <a
+            href="/admin/groups/create"
+            className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+              pathname === "/admin/groups/create"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            <span className="font-medium">Create Group</span>
+          </a>
+
+        <a
           href="/reports"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
             pathname.includes("reports")
