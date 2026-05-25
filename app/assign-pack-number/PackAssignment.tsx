@@ -10,8 +10,7 @@ interface Contributor {
   name: string;
   groupId: string;
   groupName: string;
-  position: string;
-  packNo?: string;
+  position: string; // 🔑 now the editable field
 }
 
 interface Group {
@@ -29,7 +28,7 @@ const safeJson = async (res: Response) => {
   }
 };
 
-export default function AssignPackNumberPage() {
+export default function AssignPositionPage() {
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
@@ -84,8 +83,7 @@ export default function AssignPackNumberPage() {
           name: item.name ?? "Unknown",
           groupId: item.groupId ?? "",
           groupName: item.groupName ?? selectedGroupName,
-          position: item.position ?? "",
-          packNo: item.packNo ?? "",
+          position: item.position ?? "0", // default 0
         }));
 
         setContributors(formatted);
@@ -100,46 +98,36 @@ export default function AssignPackNumberPage() {
     fetchContributors();
   }, [selectedGroupName]);
 
-  const assignPackNo = (requestId: string, packNo: string) => {
+  const updatePosition = (requestId: string, newPosition: string) => {
     setContributors(prev =>
-      prev.map(c => (c.requestId === requestId ? { ...c, packNo } : c))
+      prev.map(c => (c.requestId === requestId ? { ...c, position: newPosition } : c))
     );
   };
 
-  const handleSave = async () => {
+  const savePosition = async (c: Contributor) => {
     try {
-      // 1. Check uniqueness
-      const packNos = contributors.map(c => c.packNo).filter(Boolean);
-      const duplicates = packNos.filter((p, i) => packNos.indexOf(p) !== i);
-      if (duplicates.length > 0) {
-        alert(`Duplicate pack numbers found: ${duplicates.join(", ")}`);
+      if (!c.groupId || !c.groupName || !c.position) {
+        alert(`Missing data for ${c.name}`);
         return;
       }
 
-      // 2. Assign each contributor
-      for (const c of contributors) {
-        if (!c.packNo) continue; // skip if no pack number assigned
+      const response = await fetch("/api/packnumber", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          groupId: c.groupId,
+          position: c.position,   // 🔑 send position directly
+          groupName: c.groupName,
+        }),
+      });
 
-        const response = await fetch("/api/packnumber", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            groupId: c.groupId,
-            position: c.position,
-            groupName: c.groupName,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to assign pack number for ${c.name}`);
-        }
+      if (!response.ok) {
+        throw new Error(`Failed to assign position for ${c.name}`);
       }
 
-      alert("Pack numbers assigned successfully!");
+      alert(`Position saved for ${c.name}!`);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Error assigning pack numbers";
-      alert(message);
+      alert(err instanceof Error ? err.message : "Error saving position");
     }
   };
 
@@ -157,7 +145,7 @@ export default function AssignPackNumberPage() {
         <Header />
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-xl font-bold mb-4">Assign Pack Numbers</h1>
+            <h1 className="text-xl font-bold mb-4">Assign Positions</h1>
 
             {/* GroupName Dropdown */}
             <div className="mb-4">
@@ -181,12 +169,11 @@ export default function AssignPackNumberPage() {
               <table className="min-w-full border border-gray-300">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="px-4 py-2 border">Pack No.</th>
+                    <th className="px-4 py-2 border">Position</th>
                     <th className="px-4 py-2 border">Name</th>
                     <th className="px-4 py-2 border">Mobile</th>
                     <th className="px-4 py-2 border">Group ID</th>
                     <th className="px-4 py-2 border">Group Name</th>
-                    <th className="px-4 py-2 border">Position</th>
                     <th className="px-4 py-2 border">Action</th>
                   </tr>
                 </thead>
@@ -194,26 +181,31 @@ export default function AssignPackNumberPage() {
                   {contributors.length > 0 ? (
                     contributors.map(c => (
                       <tr key={c.requestId}>
-                        <td className="px-4 py-2 border">{c.packNo ?? "-"}</td>
+                        <td className="px-4 py-2 border">{c.position}</td>
                         <td className="px-4 py-2 border">{c.name}</td>
                         <td className="px-4 py-2 border">{c.mobile}</td>
                         <td className="px-4 py-2 border">{c.groupId}</td>
                         <td className="px-4 py-2 border">{c.groupName}</td>
-                        <td className="px-4 py-2 border">{c.position}</td>
                         <td className="px-4 py-2 border">
                           <button
                             onClick={() => {
-                              const newPackNo = prompt(
-                                `Assign Pack No for ${c.name}:`,
-                                c.packNo ?? ""
+                              const newPos = prompt(
+                                `Assign Position for ${c.name}:`,
+                                c.position ?? "0"
                               );
-                              if (newPackNo !== null) {
-                                assignPackNo(c.requestId, newPackNo);
+                              if (newPos !== null) {
+                                updatePosition(c.requestId, newPos);
                               }
                             }}
-                            className="px-2 py-1 bg-blue-500 text-white rounded"
+                            className="px-2 py-1 bg-blue-500 text-white rounded mr-2"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => savePosition(c)}
+                            className="px-2 py-1 bg-green-600 text-white rounded"
+                          >
+                            Save
                           </button>
                         </td>
                       </tr>
@@ -221,7 +213,7 @@ export default function AssignPackNumberPage() {
                   ) : (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={6}
                         className="px-4 py-2 border text-center text-gray-500"
                       >
                         No records found
@@ -230,15 +222,6 @@ export default function AssignPackNumberPage() {
                   )}
                 </tbody>
               </table>
-            </div>
-
-            <div className="mt-4">
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 bg-green-600 text-white rounded"
-              >
-                Save Pack Numbers
-              </button>
             </div>
           </div>
         </main>

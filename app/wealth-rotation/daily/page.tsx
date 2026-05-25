@@ -1,8 +1,8 @@
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
-import { DailyWealthRotationMetrics } from "@/components/daily-wealth-rotation-metrics"
-import { DailyWealthRotationGroups } from "@/components/daily-wealth-rotation-groups"
-import { DailyWealthRotationChart } from "@/components/daily-wealth-rotation-chart"
+import { Header } from "@/components/header";
+import { Sidebar } from "@/components/sidebar";
+import DailyWealthRotationMetrics from "@/components/daily-wealth-rotation-metrics";
+import DailyWealthRotationGroups from "@/components/daily-wealth-rotation-groups";
+import DailyWealthRotationChart from "@/components/daily-wealth-rotation-chart";
 
 export default function DailyWealthRotationPage() {
   return (
@@ -12,7 +12,9 @@ export default function DailyWealthRotationPage() {
         <Header />
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold text-foreground">Daily Wealth Rotation</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Daily Wealth Rotation
+            </h1>
             <section id="overview">
               <DailyWealthRotationMetrics />
             </section>
@@ -26,5 +28,5 @@ export default function DailyWealthRotationPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }

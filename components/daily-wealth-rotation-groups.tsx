@@ -1,136 +1,194 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { useState, useEffect } from "react";
 
-interface JoinRequest {
-  groupName: string
-  duration: string
-  name: string
-  mobile: string
-  balance: string
-  groupCode: string
-  // status: "pending" | "approved" | "declined"
+interface UnifiedRow {
+  groupName: string;
+  groupCode: string;
+  name: string;
+  mobile: string;
+  // balance: string;
+  collectionDate: string;
+  groupId: string;
+  position: string;
 }
 
+interface Group {
+  groupName: string;
+  groupCode: string;
+}
 
-export function DailyWealthRotationGroups() {
-  const [requests, setRequests] = useState<JoinRequest[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+const safeJson = async (res: Response) => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("Server did not return valid JSON");
+  }
+};
 
+export default function DailyWealthRotationGroups() {
+  const [rows, setRows] = useState<UnifiedRow[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroupName, setSelectedGroupName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Step 1: Fetch groups for dropdown
   useEffect(() => {
-    const fetchRequests = async () => {
+    const fetchGroups = async () => {
       try {
-        const response = await fetch("/api/pending/daily")
-        if (!response.ok) throw new Error("Failed to fetch requests")
+        const res = await fetch("/api/groups");
+        const data = await safeJson(res);
 
-        const json = await response.json()
-        console.log("API response:", json)
+        const formatted: Group[] = (data.details || []).map((item: any) => ({
+          groupName: item.grouptag ?? "",
+          groupCode: item.groupCode ?? "",
+        }));
 
-        const items = Array.isArray(json.details) ? json.details : []
-
-        const formatted: JoinRequest[] = items.map((item: any) => ({
-          // id: item.mobile ?? "",
-          name: item.name ?? "Unknown",
-          mobile: item.mobile ?? "N/A",
-          balance: item.balance ?? "N/A",
-          groupCode: item.groupCode ?? "N/A",
-          groupName: item.groupName ?? "N/A",
-          duration: item.duration ?? "N/A",
-        }))
-
-        setRequests(formatted)
-      } catch (err: any) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+        setGroups(formatted);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch groups";
+        setError(message);
       }
-    }
+    };
+    fetchGroups();
+  }, []);
 
-    fetchRequests()
-  }, [])
+  // Step 2: Fetch all records initially (GET)
+  useEffect(() => {
+    const fetchAllRequests = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/pending/daily", {
+          method: "GET",
+        });
+        if (!response.ok) throw new Error("Failed to fetch requests");
 
-  // ✅ Approve action with backend call
-  const handleApprove = async (id: string) => {
-    try {
-      const response = await fetch("http://94.72.111.23:2000/myritewallet/v1/DAILY/VIEW", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: id }),
-      })
-      if (!response.ok) throw new Error("Failed to approve request")
+        const json = await response.json();
+        const items = Array.isArray(json.details) ? json.details : [];
 
-      // Update UI
-      setRequests((prev) =>
-        prev.map((req) => (req.mobile === id ? { ...req, status: "approved" } : req))
-      )
-    } catch (err) {
-      console.error("Approve failed:", err)
-      alert("Failed to approve request")
-    }
-  }
+        const formatted: UnifiedRow[] = items.map((item: any) => ({
+          groupName: item.groupName ?? "N/A",
+          groupCode: item.groupCode ?? "N/A",
+          name: item.name ?? "N/A",
+          mobile: item.mobile ?? "N/A",
+          // balance: item.balance ?? "N/A",
+          collectionDate: item.collectionDate ?? "N/A",
+          groupId: item.groupId ?? "N/A",
+          position: item.position ?? "N/A",
+        }));
 
-  // ✅ Decline action with backend call
-  const handleDecline = async (id: string) => {
-    try {
-      const response = await fetch("http://94.72.111.23:2000/myritewallet/v1/DAILY/VIEW", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: id }),
-      })
-      if (!response.ok) throw new Error("Failed to decline request")
+        setRows(formatted);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // Update UI
-      setRequests((prev) =>
-        prev.map((req) => (req.mobile === id ? { ...req, status: "declined" } : req))
-      )
-    } catch (err) {
-      console.error("Decline failed:", err)
-      alert("Failed to decline request")
-    }
-  }
+    fetchAllRequests();
+  }, []);
 
-  if (loading) return <p className="p-6">Loading requests...</p>
-  if (error) return <p className="p-6 text-red-600">Error: {error}</p>
+  // Step 3: Fetch records for selected group (POST WITH-SLOT)
+  useEffect(() => {
+    if (!selectedGroupName) return;
+
+    const fetchGroupRequests = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          "/api/slot",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ groupName: selectedGroupName }),
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch requests");
+
+        const json = await response.json();
+        const items = Array.isArray(json.details) ? json.details : [];
+
+        const formatted: UnifiedRow[] = items.map((item: any) => ({
+          groupName: item.groupName ?? selectedGroupName,
+          groupCode: "N/A", // not returned in WITH-SLOT
+          name: item.name ?? "N/A",
+          mobile: item.mobile ?? "N/A",
+          // balance: "N/A", // not returned in WITH-SLOT
+          collectionDate: item.collectionDate ?? "N/A", // not returned in WITH-SLOT
+          groupId: item.groupId ?? "N/A",
+          position: item.position ?? "N/A",
+        }));
+
+        setRows(formatted);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroupRequests();
+  }, [selectedGroupName]);
+
+  if (loading) return <p className="p-6">Loading requests...</p>;
+  if (error) return <p className="p-6 text-red-600">Error: {error}</p>;
+
   return (
     <div className="bg-card rounded-lg border border-border p-6">
-      <h2 className="text-xl font-bold text-foreground mb-6">Daily Wealth Rotation Groups</h2>
+      <h2 className="text-xl font-bold text-foreground mb-6">
+        Daily Wealth Rotation Groups
+      </h2>
 
-      <div>Table for Daily Wealth Rotation</div>
+      {/* GroupName Dropdown */}
+      <div className="mb-4">
+        <label className="block mb-1 text-sm font-medium">Group Name</label>
+        <select
+          value={selectedGroupName}
+          onChange={e => setSelectedGroupName(e.target.value)}
+          className="border px-2 py-1 rounded min-w-[200px]"
+        >
+          <option value="">All Groups</option>
+          {groups.map(g => (
+            <option key={g.groupCode} value={g.groupName}>
+              {g.groupName}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Unified Table */}
       <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">NAME</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">MOBILE</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">BALANCE</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">DURATION</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">GROUPCODE</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">GROUPNAME</th>
+        <thead>
+          <tr className="border-b border-border">
+            <th className="text-left py-3 px-4">NAME</th>
+            <th className="text-left py-3 px-4">MOBILE</th>
+            {/* <th className="text-left py-3 px-4">BALANCE</th> */}
+            <th className="text-left py-3 px-4">COLLECTION DATE</th>
+            <th className="text-left py-3 px-4">GROUPCODE</th>
+            <th className="text-left py-3 px-4">GROUPNAME</th>
+            <th className="text-left py-3 px-4">GROUPID</th>
+            <th className="text-left py-3 px-4">POSITION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((req, idx) => (
+            <tr key={idx}>
+              <td className="px-4 py-2 border">{req.name}</td>
+              <td className="px-4 py-2 border">{req.mobile}</td>
+              {/* <td className="px-4 py-2 border">{req.balance}</td> */}
+              <td className="px-4 py-2 border">{req.collectionDate}</td>
+              <td className="px-4 py-2 border">{req.groupCode}</td>
+              <td className="px-4 py-2 border">{req.groupName}</td>
+              <td className="px-4 py-2 border">{req.groupId}</td>
+              <td className="px-4 py-2 border">{req.position}</td>
             </tr>
-          </thead>
-          <tbody>
-                {requests.map((req) => (
-                  <tr key={req.mobile}>
-                    <td className="px-4 py-2 border">{req.name}</td>
-                    <td className="px-4 py-2 border">{req.mobile}</td>
-                    <td className="px-4 py-2 border">{req.balance}</td>
-                    <td className="px-4 py-2 border">{req.duration}</td>
-                    <td className="px-4 py-2 border">{req.groupCode}</td>
-                    <td className="px-4 py-2 border">{req.groupName}</td>
-                    <td className="px-4 py-2 border">
-                      
-                     
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-          
-        </table>
+          ))}
+        </tbody>
+      </table>
     </div>
-  )
-} 
-
-
-
+  );
+}
