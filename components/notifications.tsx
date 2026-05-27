@@ -1,4 +1,7 @@
 import { Card } from "@/components/ui/card"
+import { useState } from "react"
+import { Header } from "@/components/header"
+import { Sidebar } from "@/components/sidebar"
 
 const notifications = [
   {

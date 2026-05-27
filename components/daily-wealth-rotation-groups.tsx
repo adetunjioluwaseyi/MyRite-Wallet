@@ -12,6 +12,9 @@ interface UnifiedRow {
   // duration: string;
   groupId: string;
   position: string;
+  payoutStatus: string;
+  contribution: string;
+  fine: string;
 }
 
 interface Group {
@@ -35,12 +38,20 @@ export default function DailyWealthRotationGroups() {
   const [selectedGroupName, setSelectedGroupName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 7;
+
+  // Calculate paginated rows
+  const totalPages = Math.ceil(rows.length / pageSize);
+  const paginatedRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Step 1: Fetch groups for dropdown
   useEffect(() => {
+    setCurrentPage(1); // Reset to first page when group changes or new data loads
     const fetchGroups = async () => {
       try {
-        const res = await fetch("/api/groups");
+        const res = await fetch("/api/all-groups");
         const data = await safeJson(res);
 
         const formatted: Group[] = (data.details || []).map((item: any) => ({
@@ -93,6 +104,9 @@ export default function DailyWealthRotationGroups() {
           // duration: item.duration ?? "N/A",
           groupId: item.groupId ?? "N/A",
           position: item.position ?? "N/A",
+          payoutStatus: item.payoutStatus ?? "N/A",
+          contribution: item.contribution ?? "N/A",
+          fine: item.fine ?? "N/A",
         }));
 
         setRows(formatted);
@@ -132,35 +146,66 @@ export default function DailyWealthRotationGroups() {
         </select>
       </div>
 
-      {/* Unified Table */}
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-border">
-            <th className="text-left py-3 px-4">NAME</th>
-            <th className="text-left py-3 px-4">MOBILE</th>
-            <th className="text-left py-3 px-4">COLLECTION Date</th>
-            {/* <th className="text-left py-3 px-4">DURATION</th> */}
-            <th className="text-left py-3 px-4">GROUPCODE</th>
-            <th className="text-left py-3 px-4">GROUPNAME</th>
-            <th className="text-left py-3 px-4">GROUPID</th>
-            <th className="text-left py-3 px-4">POSITION</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((req, idx) => (
-            <tr key={idx}>
-              <td className="px-4 py-2 border">{req.name}</td>
-              <td className="px-4 py-2 border">{req.mobile}</td>
-              <td className="px-4 py-2 border">{req.collectionDate}</td>
-              {/* <td className="px-4 py-2 border">{req.duration}</td> */}
-              <td className="px-4 py-2 border">{req.groupCode}</td>
-              <td className="px-4 py-2 border">{req.groupName}</td>
-              <td className="px-4 py-2 border">{req.groupId}</td>
-              <td className="px-4 py-2 border">{req.position}</td>
+      {/* Unified Table with horizontal scroll and pagination */}
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-max w-full">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left py-3 px-4">NAME</th>
+              <th className="text-left py-3 px-4">MOBILE</th>
+              <th className="text-left py-3 px-4">COLLECTION Date</th>
+              {/* <th className="text-left py-3 px-4">DURATION</th> */}
+              <th className="text-left py-3 px-4">GROUPCODE</th>
+              <th className="text-left py-3 px-4">GROUPNAME</th>
+              <th className="text-left py-3 px-4">GROUPID</th>
+              <th className="text-left py-3 px-4">POSITION</th>
+              <th className="text-left py-3 px-4">PAYOUTSTATUS</th>
+              <th className="text-left py-3 px-4">CONTRIBUTION</th>
+              <th className="text-left py-3 px-4">FINE</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {paginatedRows.map((req, idx) => (
+              <tr key={idx}>
+                <td className="px-4 py-2 border">{req.name}</td>
+                <td className="px-4 py-2 border">{req.mobile}</td>
+                <td className="px-4 py-2 border">{req.collectionDate}</td>
+                {/* <td className="px-4 py-2 border">{req.duration}</td> */}
+                <td className="px-4 py-2 border">{req.groupCode}</td>
+                <td className="px-4 py-2 border">{req.groupName}</td>
+                <td className="px-4 py-2 border">{req.groupId}</td>
+                <td className="px-4 py-2 border">{req.position}</td>
+                <td className="px-4 py-2 border">{req.payoutStatus}</td>
+                <td className="px-4 py-2 border">{req.contribution}</td>
+                <td className="px-4 py-2 border">{req.fine}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination Controls */}
+      {rows.length > pageSize && (
+        <div className="flex items-center justify-center gap-4 mt-4">
+          <button
+            className="px-3 py-1 rounded border disabled:opacity-50"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="px-3 py-1 rounded border disabled:opacity-50"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -184,7 +184,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           )}
         </div>
 
-        <a
+        {/* <a
           href="/payment-approval"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
             pathname.includes("payment-approval")
@@ -194,7 +194,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         >
           <FileText className="w-5 h-5" />
           <span className="font-medium">Payment Approvals</span>
-        </a>
+        </a> */}
 
         <a
           href="/add-to-group"
@@ -244,7 +244,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
             <span className="font-medium">Create Group</span>
           </a>
 
-        <a
+        {/* <a
           href="/reports"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
             pathname.includes("reports")
@@ -254,7 +254,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         >
           <FileText className="w-5 h-5" />
           <span className="font-medium">Reports</span>
-        </a>
+        </a> */}
 
         <a
           href="/admin-edit"

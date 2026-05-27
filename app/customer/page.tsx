@@ -130,8 +130,10 @@ export default function customer() {
                 </tr>
               </thead>
               <tbody>
+                
                 {requests.map((req) => (
                   <tr key={req.mobile}>
+                     
                     <td className="px-4 py-2 border">{req.firstName}</td>
                     <td className="px-4 py-2 border">{req.lastName}</td>
                     <td className="px-4 py-2 border">{req.mobile}</td>
