@@ -9,6 +9,7 @@ interface UnifiedRow {
   mobile: string;
   // balance: string;
   collectionDate: string;
+  // duration: string;
   groupId: string;
   position: string;
 }
@@ -57,26 +58,39 @@ export default function DailyWealthRotationGroups() {
     fetchGroups();
   }, []);
 
-  // Step 2: Fetch all records initially (GET)
+  // Step 2: Unified fetch depending on selectedGroupName
   useEffect(() => {
-    const fetchAllRequests = async () => {
+    const fetchRequests = async () => {
       setLoading(true);
       try {
-        const response = await fetch("/api/pending/daily", {
-          method: "GET",
-        });
-        if (!response.ok) throw new Error("Failed to fetch requests");
+        let response;
+        if (!selectedGroupName) {
+          // All groups → GET
+          response = await fetch("/api/pending/daily", { method: "GET" });
+        } else {
+          // Specific group → POST WITH-SLOT
+          response = await fetch(
+              "/api/slot",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ groupName: selectedGroupName }),
+            }
+          );
+        }
 
+        if (!response.ok) throw new Error("Failed to fetch requests");
         const json = await response.json();
         const items = Array.isArray(json.details) ? json.details : [];
 
         const formatted: UnifiedRow[] = items.map((item: any) => ({
-          groupName: item.groupName ?? "N/A",
+          groupName: item.groupName ?? selectedGroupName ?? "N/A",
           groupCode: item.groupCode ?? "N/A",
           name: item.name ?? "N/A",
           mobile: item.mobile ?? "N/A",
           // balance: item.balance ?? "N/A",
           collectionDate: item.collectionDate ?? "N/A",
+          // duration: item.duration ?? "N/A",
           groupId: item.groupId ?? "N/A",
           position: item.position ?? "N/A",
         }));
@@ -89,50 +103,8 @@ export default function DailyWealthRotationGroups() {
       }
     };
 
-    fetchAllRequests();
-  }, []);
-
-  // Step 3: Fetch records for selected group (POST WITH-SLOT)
-  useEffect(() => {
-    if (!selectedGroupName) return;
-
-    const fetchGroupRequests = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          "/api/slot",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ groupName: selectedGroupName }),
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch requests");
-
-        const json = await response.json();
-        const items = Array.isArray(json.details) ? json.details : [];
-
-        const formatted: UnifiedRow[] = items.map((item: any) => ({
-          groupName: item.groupName ?? selectedGroupName,
-          groupCode: "N/A", // not returned in WITH-SLOT
-          name: item.name ?? "N/A",
-          mobile: item.mobile ?? "N/A",
-          // balance: "N/A", // not returned in WITH-SLOT
-          collectionDate: item.collectionDate ?? "N/A", // not returned in WITH-SLOT
-          groupId: item.groupId ?? "N/A",
-          position: item.position ?? "N/A",
-        }));
-
-        setRows(formatted);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGroupRequests();
-  }, [selectedGroupName]);
+    fetchRequests();
+  }, [selectedGroupName]); // runs both when selecting and clearing
 
   if (loading) return <p className="p-6">Loading requests...</p>;
   if (error) return <p className="p-6 text-red-600">Error: {error}</p>;
@@ -166,8 +138,8 @@ export default function DailyWealthRotationGroups() {
           <tr className="border-b border-border">
             <th className="text-left py-3 px-4">NAME</th>
             <th className="text-left py-3 px-4">MOBILE</th>
-            {/* <th className="text-left py-3 px-4">BALANCE</th> */}
-            <th className="text-left py-3 px-4">COLLECTION DATE</th>
+            <th className="text-left py-3 px-4">COLLECTION Date</th>
+            {/* <th className="text-left py-3 px-4">DURATION</th> */}
             <th className="text-left py-3 px-4">GROUPCODE</th>
             <th className="text-left py-3 px-4">GROUPNAME</th>
             <th className="text-left py-3 px-4">GROUPID</th>
@@ -179,8 +151,8 @@ export default function DailyWealthRotationGroups() {
             <tr key={idx}>
               <td className="px-4 py-2 border">{req.name}</td>
               <td className="px-4 py-2 border">{req.mobile}</td>
-              {/* <td className="px-4 py-2 border">{req.balance}</td> */}
               <td className="px-4 py-2 border">{req.collectionDate}</td>
+              {/* <td className="px-4 py-2 border">{req.duration}</td> */}
               <td className="px-4 py-2 border">{req.groupCode}</td>
               <td className="px-4 py-2 border">{req.groupName}</td>
               <td className="px-4 py-2 border">{req.groupId}</td>
