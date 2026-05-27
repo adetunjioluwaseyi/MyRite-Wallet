@@ -1,8 +1,8 @@
-"use client"
+ "use client"
 
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+ import { Header } from "@/components/header"
+ import { Sidebar } from "@/components/sidebar"
 import { X, Check, AlertCircle, Info } from "lucide-react"
 
 interface Notification {
