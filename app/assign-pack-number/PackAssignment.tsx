@@ -40,7 +40,7 @@ export default function AssignPositionPage() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const res = await fetch("/api/groups");
+        const res = await fetch("/api/all-groups");
         const data = await safeJson(res);
 
         const formatted: Group[] = (data.details || []).map((item: any) => ({

@@ -13,7 +13,7 @@ interface UnifiedRow {
   groupId: string;
   position: string;
   payoutStatus: string;
-  contribution: string;
+  controbution: string;
   fine: string;
 }
 
@@ -105,7 +105,7 @@ export default function DailyWealthRotationGroups() {
           groupId: item.groupId ?? "N/A",
           position: item.position ?? "N/A",
           payoutStatus: item.payoutStatus ?? "N/A",
-          contribution: item.contribution ?? "N/A",
+          controbution: item.controbution ?? "N/A",
           fine: item.fine ?? "N/A",
         }));
 
@@ -176,7 +176,7 @@ export default function DailyWealthRotationGroups() {
                 <td className="px-4 py-2 border">{req.groupId}</td>
                 <td className="px-4 py-2 border">{req.position}</td>
                 <td className="px-4 py-2 border">{req.payoutStatus}</td>
-                <td className="px-4 py-2 border">{req.contribution}</td>
+                <td className="px-4 py-2 border">{req.controbution}</td>
                 <td className="px-4 py-2 border">{req.fine}</td>
               </tr>
             ))}
