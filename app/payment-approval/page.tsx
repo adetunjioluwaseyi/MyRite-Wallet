@@ -1,205 +1,205 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
-import { ChevronDown, Download, Search, Filter } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Header } from "@/components/header";
+import { Sidebar } from "@/components/sidebar";
 
-interface PaymentRecord {
-  id: string
-  date: string
-  name: string
-  walletType: string
-  amount: number
-  status: "Pending" | "Sent" | "Failed"
+interface UnifiedRow {
+  paymentDate: string;
+  mobile: string;
+  status: string;
+  groupName: string;
+  groupTag: string;
+  amount: string;
+  reference: string;
+  groupCode?: string;
 }
 
-export default function PaymentApprovalPage() {
-  const [payments, setPayments] = useState<PaymentRecord[]>([
-    {
-      id: "1",
-      date: "5/11/2025",
-      name: "Taiwo Adekola",
-      walletType: "Daily savings",
-      amount: 50000,
-      status: "Pending",
-    },
-    {
-      id: "2",
-      date: "5/11/2025",
-      name: "Kehinde Adekola",
-      walletType: "Daily savings",
-      amount: 100000,
-      status: "Sent",
-    },
-    { id: "3", date: "5/11/2025", name: "James oladipo", walletType: "Daily savings", amount: 500000, status: "Sent" },
-    { id: "4", date: "5/11/2025", name: "Toyo Adesola", walletType: "Daily savings", amount: 20000, status: "Failed" },
-    {
-      id: "5",
-      date: "5/11/2025",
-      name: "Damilola Olaboyo",
-      walletType: "Daily savings",
-      amount: 50000,
-      status: "Sent",
-    },
-    {
-      id: "6",
-      date: "5/11/2025",
-      name: "Taiwo Adekola",
-      walletType: "Daily savings",
-      amount: 50000,
-      status: "Pending",
-    },
-    { id: "7", date: "5/11/2025", name: "Taiwo Adekola", walletType: "Daily savings", amount: 50000, status: "Failed" },
-    {
-      id: "8",
-      date: "5/11/2025",
-      name: "Taiwo Adekola",
-      walletType: "Daily savings",
-      amount: 50000,
-      status: "Pending",
-    },
-  ])
+interface Group {
+  groupName: string;
+  groupTag: string;
+  groupCode?: string;
+}
 
-  const [selectedWallet, setSelectedWallet] = useState("All Wallets")
-  const [searchTerm, setSearchTerm] = useState("")
-
-  const approvePayment = (id: string) => {
-    setPayments(payments.map((payment) => (payment.id === id ? { ...payment, status: "Sent" as const } : payment)))
+const safeJson = async (res: Response) => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("Server did not return valid JSON");
   }
+};
 
-  const approveAllPayments = () => {
-    setPayments(
-      payments.map((payment) => (payment.status === "Pending" ? { ...payment, status: "Sent" as const } : payment)),
-    )
-  }
+export default function PaymentApproval() {
+  const [rows, setRows] = useState<UnifiedRow[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroupName, setSelectedGroupName] = useState("");
+  const [loading, setLoading] = useState(false);   // ✅ defined here
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 7;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "Sent":
-        return "bg-green-100 text-green-800"
-      case "Failed":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
+  const totalPages = Math.ceil(rows.length / pageSize);
+  const paginatedRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  // Step 1: Fetch groups for dropdown
+  useEffect(() => {
+    setCurrentPage(1);
+    const fetchGroups = async () => {
+      try {
+        const res = await fetch("/api/all-groups");
+        const data = await safeJson(res);
+
+        const formatted: Group[] = (data.details || []).map((item: any) => ({
+          groupName: item.groupName ?? "",
+          groupTag: item.groupTag ?? "",
+          groupCode: item.groupCode ?? "",
+        }));
+
+        setGroups(formatted);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to fetch groups";
+        setError(message);
+      }
+    };
+    fetchGroups();
+  }, []);
+
+  // Step 2: Fetch requests depending on selectedGroupName
+  useEffect(() => {
+    const fetchRequests = async () => {
+      setLoading(true);
+      try {
+        let response;
+        if (!selectedGroupName) {
+          response = await fetch("/api/payment-collection", { method: "GET" }); // ✅ GET
+        } else {
+          response = await fetch("/api/payment-seerbit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ groupName: selectedGroupName }),
+          });
+        }
+
+        if (!response.ok) throw new Error("Failed to fetch requests");
+        const json = await response.json();
+        const items = Array.isArray(json.details) ? json.details : [];
+
+        const formatted: UnifiedRow[] = items.map((item: any) => ({
+          groupName: item.groupName ?? selectedGroupName ?? "N/A",
+          groupTag: item.groupTag ?? "N/A",
+          paymentDate: item.paymentDate ?? "N/A",
+          mobile: item.mobile ?? "N/A",
+          status: item.status ?? "N/A",
+          amount: item.amount ?? "N/A",
+          reference: item.reference ?? "N/A",
+          groupCode: item.groupCode ?? "N/A",
+        }));
+
+        setRows(formatted);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, [selectedGroupName]);
+
+  if (loading) return <p className="p-6">Loading requests...</p>;
+  if (error) return <p className="p-6 text-red-600">Error: {error}</p>;
 
   return (
     <div className="flex h-screen bg-background">
+      {/* Sidebar */}
       <Sidebar />
+
+      {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
         <Header />
+
+        {/* Page content */}
         <main className="flex-1 overflow-auto p-6">
-          <div className="max-w-7xl mx-auto">
-            {/* Header Section */}
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-foreground">PAYMENT APPROVAL</h1>
-              <div className="flex items-center gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                  <Download size={18} />
-                  <span className="text-sm font-medium">Export</span>
-                </button>
-              </div>
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h2 className="text-xl font-bold text-foreground mb-6">
+              All Payment details
+            </h2>
+
+            {/* GroupName Dropdown */}
+            <div className="mb-4">
+              <label className="block mb-1 text-sm font-medium">Group Name</label>
+              <select
+                value={selectedGroupName}
+                onChange={e => setSelectedGroupName(e.target.value)}
+                className="border px-2 py-1 rounded min-w-[200px]"
+              >
+                <option value="">All Groups</option>
+                {groups.map(g => (
+                  <option key={g.groupTag} value={g.groupName}>
+                    {g.groupName}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Filters Section */}
-            <div className="flex gap-4 mb-6">
-              {/* Wallet Group Dropdown */}
-              <div className="relative">
-                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
-                  <span>{selectedWallet}</span>
-                  <ChevronDown size={16} />
-                </button>
-              </div>
-
-              {/* Date Filter */}
-              <input
-                type="date"
-                defaultValue="2025-11-05"
-                className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm"
-              />
-
-              {/* Search Bar */}
-              <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg">
-                <Search size={18} className="text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search here..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 bg-transparent outline-none text-sm"
-                />
-              </div>
-
-              {/* Filter Button */}
-              <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                <Filter size={18} />
-                <span className="text-sm font-medium">Filter</span>
-              </button>
-            </div>
-
-            {/* Table Section */}
-            <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-100 border-b border-gray-300">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">DATE</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">NAME</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">WALLET TYPE</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">AMOUNT</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">ACTION</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">STATUS</th>
+            {/* Table */}
+            <div className="w-full overflow-x-auto">
+              <table className="min-w-max w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4">PAYMENT DATE</th>
+                    <th className="text-left py-3 px-4">MOBILE</th>
+                    <th className="text-left py-3 px-4">STATUS</th>
+                    <th className="text-left py-3 px-4">GROUPTAG</th>
+                    <th className="text-left py-3 px-4">AMOUNT</th>
+                    <th className="text-left py-3 px-4">REFERENCE</th>
+                    <th className="text-left py-3 px-4">GROUP CODE</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.map((payment) => (
-                    <tr key={payment.id} className="border-b border-gray-200 hover:bg-gray-50">
-                      <td className="px-6 py-3 text-sm text-gray-600">{payment.date}</td>
-                      <td className="px-6 py-3 text-sm text-gray-900">{payment.name}</td>
-                      <td className="px-6 py-3 text-sm text-gray-600">{payment.walletType}</td>
-                      <td className="px-6 py-3 text-sm font-semibold text-gray-900">
-                        {payment.amount.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-3 text-sm">
-                        {payment.status === "Pending" ? (
-                          <button
-                            onClick={() => approvePayment(payment.id)}
-                            className="px-4 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700 font-medium"
-                          >
-                            Approve
-                          </button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-3 text-sm">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(payment.status)}`}
-                        >
-                          {payment.status}
-                        </span>
-                      </td>
+                  {paginatedRows.map((req, idx) => (
+                    <tr key={idx}>
+                      <td className="px-4 py-2 border">{req.paymentDate}</td>
+                      <td className="px-4 py-2 border">{req.mobile}</td>
+                      <td className="px-4 py-2 border">{req.status}</td>
+                      <td className="px-4 py-2 border">{req.groupTag}</td>
+                      <td className="px-4 py-2 border">{req.amount}</td>
+                      <td className="px-4 py-2 border">{req.reference}</td>
+                      <td className="px-4 py-2 border">{req.groupCode}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            {/* Approve All Button */}
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={approveAllPayments}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold"
-              >
-                Approve All
-              </button>
-            </div>
+            {/* Pagination */}
+            {rows.length > pageSize && (
+              <div className="flex items-center justify-center gap-4 mt-4">
+                <button
+                  className="px-3 py-1 rounded border disabled:opacity-50"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Prev
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="px-3 py-1 rounded border disabled:opacity-50"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>
     </div>
-  )
+  );
 }
