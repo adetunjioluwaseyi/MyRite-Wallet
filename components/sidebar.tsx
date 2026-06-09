@@ -185,7 +185,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         </div>
 
         
-         <a
+         {/* <a
           href="/payment-approval"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
             pathname.includes("payment-approval")
@@ -195,7 +195,44 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         >
           <FileText className="w-5 h-5" />
           <span className="font-medium">View Payment</span>
-        </a> 
+        </a>  */}
+
+        <div>
+          <button
+            onClick={() => toggleExpand("payment-approval")}
+            className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-sm ${
+              pathname.includes("payment-approval")
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <Gift className="w-5 h-5" />
+              <span className="font-medium">payment</span>
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${
+                isExpanded("payment-approval") ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {isExpanded("payment-approval") && (
+            <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
+              <a href="/payment-approval" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+                All Ajo
+              </a>
+              <a href="/seerbit" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+               Seerbit Transactions 
+              </a>
+              {/* <a href="/group" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+                All Groups
+              </a> */}
+              
+              
+            </div>
+          )}
+        </div>
 
         <a
           href="/add-to-group"

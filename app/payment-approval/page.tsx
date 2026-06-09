@@ -35,7 +35,7 @@ export default function PaymentApproval() {
   const [rows, setRows] = useState<UnifiedRow[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupName, setSelectedGroupName] = useState("");
-  const [loading, setLoading] = useState(false);   // ✅ defined here
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 7;
@@ -73,12 +73,12 @@ export default function PaymentApproval() {
       try {
         let response;
         if (!selectedGroupName) {
-          response = await fetch("/api/payment-collection", { method: "GET" }); // ✅ GET
+          response = await fetch("/api/payment-collection", { method: "GET" });
         } else {
           response = await fetch("/api/payment-seerbit", {
-            method: "POST",
+            method: "POST", // ✅ use POST when sending a body
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ groupName: selectedGroupName }),
+            body: JSON.stringify({ groupTag: selectedGroupName }), // ✅ send groupTag
           });
         }
 
@@ -137,9 +137,9 @@ export default function PaymentApproval() {
                 className="border px-2 py-1 rounded min-w-[200px]"
               >
                 <option value="">All Groups</option>
-                {groups.map(g => (
-                  <option key={g.groupTag} value={g.groupName}>
-                    {g.groupName}
+                {groups.map((g, idx) => (
+                  <option key={`${g.groupCode}-${idx}`} value={g.groupTag}>
+                    {g.groupTag}
                   </option>
                 ))}
               </select>
