@@ -27,7 +27,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
   const isExpanded = (item: string) => expandedItem === item
 
   return (
-    <aside className="w-64 bg-card border-r border-border p-6 flex flex-col h-screen">
+    <aside className="hidden md:flex w-64 bg-card border-r border-border p-6 flex-col h-screen">
       {/* Logo */}
       <div className="flex items-center gap-2 mb-8">
         <img src="/logo.png" alt="MyRite Wallet Logo" className="h-10 w-auto" />

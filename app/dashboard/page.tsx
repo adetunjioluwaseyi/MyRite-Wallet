@@ -13,31 +13,23 @@ import { Notifications } from "@/components/notifications"
 
 export default function Dashboard() {
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex flex-col md:flex-row h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden w-full md:w-auto">
         <Header />
-        <main className="flex-1 overflow-auto p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <main className="flex-1 overflow-auto p-3 sm:p-6">
+          <div className="w-full space-y-4 sm:space-y-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
 
             <WalletsOverview />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div className="lg:col-span-2">
                 <WealthRotationInsights />
               </div>
-              {/* <div>
-                <InstanceAccessInsights />
-              </div> */}
             </div>
 
-            {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <WalletRevenue />
-              <SavingsRotationInsights />
-            </div> */}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <TopWallets />
               <Notifications />
             </div>
