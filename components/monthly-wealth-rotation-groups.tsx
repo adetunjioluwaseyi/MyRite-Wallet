@@ -32,7 +32,7 @@ const safeJson = async (res: Response) => {
   }
 };
  
-export default function DailyWealthRotationGroups() {
+export function MonthlyWealthRotationGroups() {
   const [rows, setRows] = useState<UnifiedRow[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupName, setSelectedGroupName] = useState("");
