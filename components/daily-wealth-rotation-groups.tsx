@@ -1,7 +1,7 @@
 "use client";
  
 import { useState, useEffect } from "react";
- 
+import { useToast } from "@/hooks/use-toast";
  
 interface UnifiedRow {
   groupName: string;
@@ -33,11 +33,14 @@ const safeJson = async (res: Response) => {
 };
  
 export default function DailyWealthRotationGroups() {
+  const { toast } = useToast();
   const [rows, setRows] = useState<UnifiedRow[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupName, setSelectedGroupName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [payoutLoadingGroupId, setPayoutLoadingGroupId] = useState<string | null>(null);
+  const [paidGroupIds, setPaidGroupIds] = useState<string[]>([]);
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 7;
@@ -68,6 +71,32 @@ export default function DailyWealthRotationGroups() {
     };
     fetchGroups();
   }, []);
+ 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("paidGroupIds");
+    if (!stored) return;
+
+    try {
+      const parsed = JSON.parse(stored) as string[];
+      if (Array.isArray(parsed)) {
+        setPaidGroupIds(parsed);
+      }
+    } catch {
+      // ignore invalid localStorage state
+    }
+  }, []);
+
+  useEffect(() => {
+    if (paidGroupIds.length === 0 || rows.length === 0) return;
+    setRows((prev) =>
+      prev.map((row) =>
+        paidGroupIds.includes(row.groupId)
+          ? { ...row, payoutStatus: "Paid" }
+          : row,
+      ),
+    );
+  }, [paidGroupIds, rows.length]);
  
   // Step 2: Unified fetch depending on selectedGroupName
   useEffect(() => {
@@ -108,7 +137,13 @@ export default function DailyWealthRotationGroups() {
           bankDetails: item.bankDetails ?? "N/A",
         }));
  
-        setRows(formatted);
+        setRows(
+          formatted.map((row) =>
+            paidGroupIds.includes(row.groupId)
+              ? { ...row, payoutStatus: "Paid" }
+              : row,
+          ),
+        );
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -165,28 +200,86 @@ export default function DailyWealthRotationGroups() {
             </tr>
           </thead>
           <tbody>
-            {paginatedRows.map((req, idx) => (
-              <tr key={idx}>
-                <td className="px-4 py-2 border">{req.name}</td>
-                <td className="px-4 py-2 border">{req.mobile}</td>
-                <td className="px-4 py-2 border">{req.collectionDate}</td>
-                <td className="px-4 py-2 border">{req.groupCode}</td>
-                {/* <td className="px-4 py-2 border">{req.groupName}</td> */}
-                <td className="px-4 py-2 border">{req.groupId}</td>
-                <td className="px-4 py-2 border">{req.position}</td>
-                <td className="px-4 py-2 border">{req.payoutStatus}</td>
-                <td className="px-4 py-2 border">{req.controbution}</td>
-                <td className="px-4 py-2 border">{req.fine}</td>
-                 <td className="px-4 py-2 border">{req.bankDetails}</td>
-                 <button
-                            // onClick={() => savePosition(c)}
-                            className="px-2 py-1 bg-purple-900 text-white rounded"
-                          >
-                            Payout
-                          </button>
-               
-              </tr>
-            ))}
+            {paginatedRows.map((req, idx) => {
+              const isPaidOut = req.payoutStatus?.toLowerCase().includes("paid");
+              return (
+                <tr key={idx}>
+                  <td className="px-4 py-2 border">{req.name}</td>
+                  <td className="px-4 py-2 border">{req.mobile}</td>
+                  <td className="px-4 py-2 border">{req.collectionDate}</td>
+                  <td className="px-4 py-2 border">{req.groupCode}</td>
+                  {/* <td className="px-4 py-2 border">{req.groupName}</td> */}
+                  <td className="px-4 py-2 border">{req.groupId}</td>
+                  <td className="px-4 py-2 border">{req.position}</td>
+                  <td className="px-4 py-2 border">{req.payoutStatus}</td>
+                  <td className="px-4 py-2 border">{req.controbution}</td>
+                  <td className="px-4 py-2 border">{req.fine}</td>
+                  <td className="px-4 py-2 border">{req.bankDetails}</td>
+                  <td className="px-4 py-2 border">
+                    <button
+                      onClick={async () => {
+                        if (isPaidOut) return;
+                        const groupId = req.groupId;
+                        if (!groupId) return setError("Missing groupId");
+                        try {
+                          setPayoutLoadingGroupId(groupId);
+                          setError(null);
+                          const res = await fetch("/api/payout", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ groupId }),
+                          });
+
+                          const json = await safeJson(res);
+                          if (!res.ok) {
+                            throw new Error(json?.message || res.statusText || "Payout failed");
+                          }
+
+                          setRows((prev) =>
+                            prev.map((r) =>
+                              r.groupId === groupId ? { ...r, payoutStatus: "Paid" } : r
+                            )
+                          );
+
+                          setPaidGroupIds((prev) => {
+                            const next = prev.includes(groupId) ? prev : [...prev, groupId];
+                            if (typeof window !== "undefined") {
+                              window.localStorage.setItem(
+                                "paidGroupIds",
+                                JSON.stringify(next),
+                              );
+                            }
+                            return next;
+                          });
+
+                          toast({
+                            title: "Payment made successfully",
+                            description: `Group ${req.groupName || req.groupId} has been paid out.`,
+                          });
+                        } catch (err: any) {
+                          setError(err?.message || "Payout request failed");
+                        } finally {
+                          setPayoutLoadingGroupId(null);
+                        }
+                      }}
+                      disabled={isPaidOut || payoutLoadingGroupId === req.groupId}
+                      className={
+                        `px-2 py-1 text-white rounded disabled:opacity-50 ` +
+                        (isPaidOut
+                          ? "bg-emerald-600 cursor-not-allowed"
+                          : "bg-purple-900 hover:bg-purple-800")
+                      }
+                    >
+                      {isPaidOut
+                        ? "Paid out"
+                        : payoutLoadingGroupId === req.groupId
+                        ? "Paying..."
+                        : "Payout"}
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
