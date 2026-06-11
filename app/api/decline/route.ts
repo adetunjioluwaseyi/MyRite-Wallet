@@ -14,18 +14,30 @@ export async function POST(req: Request) {
     )
 
     const text = await backendResponse.text()
-    let data
+    let data: any
     try {
       data = JSON.parse(text)
     } catch {
       data = { raw: text }
     }
 
+    if (!backendResponse.ok) {
+      const backendError =
+        (typeof data === "object" && (data.error || data.message)) ||
+        text ||
+        "Decline request failed"
+
+      return NextResponse.json(
+        { error: backendError },
+        { status: backendResponse.status }
+      )
+    }
+
     return NextResponse.json(data, { status: backendResponse.status })
   } catch (err: any) {
     console.error("Proxy error:", err)
     return NextResponse.json(
-      { error: "Proxy failed", details: err.message },
+      { error: "Proxy failed", details: err?.message || "Unknown error" },
       { status: 500 }
     )
   }

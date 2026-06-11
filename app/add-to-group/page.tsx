@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 
@@ -37,8 +38,10 @@ function rowClass(groupMode: string, status: string): string {
 export default function AddToGroupPage() {
   const [requests, setRequests] = useState<JoinRequest[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const router = useRouter()
+  const { toast } = useToast()
 
   const safeJson = async (res: Response) => {
     const text = await res.text()
@@ -83,7 +86,7 @@ export default function AddToGroupPage() {
 
         setRequests(formatted)
       } catch (err: any) {
-        setError(err?.message ?? "Failed to fetch requests")
+        setLoadError(err?.message ?? "Failed to fetch requests")
       } finally {
         setLoading(false)
       }
@@ -94,15 +97,17 @@ export default function AddToGroupPage() {
 
   // Approve via proxy (send all fields)
   const handleApprove = async (req: JoinRequest) => {
-  try {
-    const payload = {
-      mobile: req.mobile,
-      groupCode: req.groupCode,
-      requestId: req.requestId,   // use lowercase "Id"
-      status: "approved",
-      approvedBy: "admin",
-      approvedOn: new Date().toISOString(),
-    }
+    setActionError(null)
+
+    try {
+      const payload = {
+        mobile: req.mobile,
+        groupCode: req.groupCode,
+        requestId: req.requestId,   // use lowercase "Id"
+        status: "approved",
+        approvedBy: "admin",
+        approvedOn: new Date().toISOString(),
+      }
 
     console.log("Approve payload:", payload)
 
@@ -141,8 +146,15 @@ export default function AddToGroupPage() {
         break
     }
   } catch (err: any) {
+    const message = err?.message || "Network error"
     console.error("Approve failed:", err)
-    alert("Failed to approve request: " + (err?.message || "network error"))
+    setActionError(message)
+    toast({
+      title: "Approve failed",
+      description: message,
+      variant: "destructive",
+    })
+    return
   }
 }
 
@@ -150,6 +162,8 @@ export default function AddToGroupPage() {
   // Decline via proxy (send all fields)
   const handleDecline = async (req: JoinRequest) => {
   try {
+    setActionError(null)
+
     const payload = {
       mobile: req.mobile,
       groupCode: req.groupCode,
@@ -168,23 +182,46 @@ export default function AddToGroupPage() {
     })
 
     if (!response.ok) {
-      const text = await response.text()
-      console.error("Decline failed response:", response.status, text)
-      throw new Error(text || "Failed to decline request")
+      const responseText = await response.text()
+      let errorMessage = responseText
+
+      try {
+        const errorJson = JSON.parse(responseText)
+        errorMessage = errorJson?.error || errorJson?.message || responseText
+      } catch {
+        // keep raw text if JSON parsing fails
+      }
+
+      console.error("Decline failed response:", response.status, errorMessage)
+      throw new Error(
+        errorMessage || "Unable to decline request. Please try again later."
+      )
     }
 
     setRequests(prev =>
       prev.map(r => r.requestId === req.requestId ? { ...r, status: "declined" } : r)
     )
+
+    toast({
+      title: "Request declined",
+      description: "The request has been declined successfully.",
+      variant: "default",
+    })
   } catch (err: any) {
+    const message = err?.message || "Network error"
     console.error("Decline failed:", err)
-    alert("Failed to decline request: " + (err?.message || "network error"))
+    setActionError(message)
+    toast({
+      title: "Decline failed",
+      description: message,
+      variant: "destructive",
+    })
   }
 }
 
 
   if (loading) return <p className="p-6">Loading requests...</p>
-  if (error) return <p className="p-6 text-red-600">Error: {error}</p>
+  if (loadError) return <p className="p-6 text-red-600">Error: {loadError}</p>
 
   return (
     <div className="flex h-screen bg-background">
@@ -194,7 +231,13 @@ export default function AddToGroupPage() {
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-xl font-bold mb-4">Pending Requests</h1>
-            <table className="min-w-full border border-gray-300">
+          {actionError && (
+            <div className="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-red-900">
+              <p className="font-semibold">Action failed</p>
+              <p>{actionError}</p>
+            </div>
+          )}
+          <table className="min-w-full border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-2 border">Request ID</th>
