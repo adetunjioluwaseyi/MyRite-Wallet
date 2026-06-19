@@ -5,18 +5,18 @@ import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 
 interface JoinRequest {
-  nokFirstName: string
-  nokLastName: string
-  mobile: string
-  nokEmail: string
-  idNumber: string
+  customerMobile: string
+  customerAddress: string
+  customerName: string
+  gender: string
+  maritalStatus: string
+  nokName: string
+  nokMobile: string
   nokAddress: string
+  nokEmail: string
   employmentStatus: string
-  address: string
-  city: string
-  state: string
-  country: string
   kycStatus: string
+  
 }
 
 export default function Kyc() {
@@ -34,18 +34,18 @@ export default function Kyc() {
         const items = Array.isArray(json.details) ? json.details : []
 
         const formatted: JoinRequest[] = items.map((item: any) => ({
-          nokFirstName: item.nokFirstName ?? "",
-          nokLastName: item.nokLastName ?? "",
-          mobile: item.mobile ?? "",
-          nokEmail: item.nokEmail ?? "",
-          idNumber: item.idNumber ?? "",
+          customerMobile: item.customerMobile ?? "",
+          customerAddress: item.customerAddress ?? "",
+          customerName: item.customerName ?? "",
+          gender: item.gender ?? "",
+          maritalStatus: item.maritalStatus ?? "",
+          nokName: item.nokName ?? "",
+          nokMobile: item.nokMobile ?? "",
           nokAddress: item.nokAddress ?? "",
+          nokEmail: item.nokEmail ?? "",
           employmentStatus: item.employmentStatus ?? "",
-          address: item.address ?? "",
-          city: item.city ?? "",
-          state: item.state ?? "",
-          country: item.country ?? "",
           kycStatus: item.kycStatus ?? "",
+          
         }))
 
         setRequests(formatted)
@@ -78,7 +78,7 @@ export default function Kyc() {
 
       setRequests((prev) =>
         prev.map((req) =>
-          req.mobile === id ? { ...req, kycStatus: "approved" } : req
+          req.nokMobile === id ? { ...req, kycStatus: "approved" } : req
         )
       )
     } catch (err) {
@@ -102,7 +102,7 @@ export default function Kyc() {
 
       setRequests((prev) =>
         prev.map((req) =>
-          req.mobile === id ? { ...req, kycStatus: "declined" } : req
+          req.nokMobile === id ? { ...req, kycStatus: "declined" } : req
         )
       )
     } catch (err) {
@@ -125,47 +125,45 @@ export default function Kyc() {
             <table className="min-w-full border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-4 py-2 border">FirstName</th>
-                  <th className="px-4 py-2 border">LastName</th>
-                  <th className="px-4 py-2 border">Mobile</th>
-                  <th className="px-4 py-2 border">Email</th>
-                  <th className="px-4 py-2 border">Id Number</th>
-                  <th className="px-4 py-2 border">Address</th>
+                  <th className="px-4 py-2 border">Customer Mobile</th>
+                  <th className="px-4 py-2 border">Customer Address</th>
+                  <th className="px-4 py-2 border">customerName</th>
+                  <th className="px-4 py-2 border">Gender</th>
+                  <th className="px-4 py-2 border">Marital Status</th>
+                  <th className="px-4 py-2 border">Next of Kin Name</th>
+                  <th className="px-4 py-2 border">Next of Kin Mobile</th>
+                  <th className="px-4 py-2 border">Next of Kin Address</th>
+                  <th className="px-4 py-2 border">Next of Kin Email</th>
                   <th className="px-4 py-2 border">Employment Status</th>
-                  <th className="px-4 py-2 border">Address_abv</th>
-                  <th className="px-4 py-2 border">City</th>
-                  <th className="px-4 py-2 border">State</th>
-                  <th className="px-4 py-2 border">Country</th>
                   <th className="px-4 py-2 border">KYC Status</th>
                   
                 </tr>
               </thead>
               <tbody>
                 {requests.map((req) => (
-                  <tr key={req.mobile}>
-                    <td className="px-4 py-2 border">{req.nokFirstName}</td>
-                    <td className="px-4 py-2 border">{req.nokLastName}</td>
-                    <td className="px-4 py-2 border">{req.mobile}</td>
-                    <td className="px-4 py-2 border">{req.nokEmail}</td>
-                    <td className="px-4 py-2 border">{req.idNumber}</td>
-                    <td className="px-4 py-2 border">{req.address}</td>
-                    <td className="px-4 py-2 border">{req.employmentStatus}</td>
+                  <tr key={req.nokMobile}>
+                    <td className="px-4 py-2 border">{req.customerMobile}</td>
+                    <td className="px-4 py-2 border">{req.customerAddress}</td>
+                    <td className="px-4 py-2 border">{req.customerName}</td>
+                    <td className="px-4 py-2 border">{req.gender}</td>
+                    <td className="px-4 py-2 border">{req.maritalStatus}</td>
+                    <td className="px-4 py-2 border">{req.nokName}</td>
+                    <td className="px-4 py-2 border">{req.nokMobile}</td>
                     <td className="px-4 py-2 border">{req.nokAddress}</td>
-                    <td className="px-4 py-2 border">{req.city}</td>
-                    <td className="px-4 py-2 border">{req.state}</td>
-                    <td className="px-4 py-2 border">{req.country}</td>
+                    <td className="px-4 py-2 border">{req.nokEmail}</td>
+                    <td className="px-4 py-2 border">{req.employmentStatus}</td>
                     <td className="px-4 py-2 border">{req.kycStatus}</td>
                     <td className="px-4 py-2 border space-x-2">
                       {req.kycStatus === "pending" && (
                         <>
                           <button
-                            onClick={() => handleApprove(req.mobile)}
+                            onClick={() => handleApprove(req.nokMobile)}
                             className="px-3 py-1 bg-green-500 text-white rounded"
                           >
                             Approve
                           </button>
                           <button
-                            onClick={() => handleDecline(req.mobile)}
+                            onClick={() => handleDecline(req.nokMobile)}
                             className="px-3 py-1 bg-red-500 text-white rounded"
                           >
                             Decline

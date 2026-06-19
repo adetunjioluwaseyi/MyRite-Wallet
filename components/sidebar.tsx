@@ -151,7 +151,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           >
             <span className="flex items-center gap-3">
               <Gift className="w-5 h-5" />
-              <span className="font-medium">View Wallets</span>
+              <span className="font-medium">User Managment</span>
             </span>
             <ChevronDown
               className={`w-4 h-4 transition-transform ${
@@ -163,7 +163,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           {isExpanded("view-wallets") && (
             <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
               <a href="/view-wallets" className="text-xs block px-2 py-1 rounded hover:bg-muted">
-                View Wallet
+                Device Activation
               </a>
               <a href="/customer" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 All Customers

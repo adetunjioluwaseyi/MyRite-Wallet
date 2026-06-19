@@ -51,7 +51,7 @@ export function MonthlyWealthRotationGroups() {
     setCurrentPage(1); // Reset to first page when group changes or new data loads
     const fetchGroups = async () => {
       try {
-        const res = await fetch("/api/all-groups");
+        const res = await fetch("/api/group-monthly");
         const data = await safeJson(res);
  
         const formatted: Group[] = (data.details || []).map((item: any) => ({

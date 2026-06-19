@@ -114,7 +114,7 @@ export default function customer() {
         <Header />
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-xl font-bold mb-4">KYC LISTS</h1>
+            <h1 className="text-xl font-bold mb-4">CUSTOMER LISTS</h1>
             <table className="min-w-full border border-gray-300">
               <thead className="bg-gray-100">
                 <tr>
