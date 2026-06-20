@@ -133,7 +133,7 @@ export default function Customer() {
                           setSelectedCustomer(req)
                           setShowModal(true)
                         }}
-                        className="px-2 py-1 bg-blue-600 text-white rounded"
+                        className="px-2 py-1 bg-purple-600 text-white rounded"
                       >
                         View Details
                       </button>
