@@ -15,6 +15,7 @@ interface UnifiedRow {
   controbution: string;
   fine: string;
   bankDetails: string;
+  paymentRequest: string;
 }
  
 interface Group {
@@ -135,6 +136,7 @@ export default function DailyWealthRotationGroups() {
           controbution: item.controbution ?? "N/A",
           fine: item.fine ?? "N/A",
           bankDetails: item.bankDetails ?? "N/A",
+          paymentRequest: item.paymentRequest ?? "N/A",
         }));
  
         setRows(
@@ -195,6 +197,7 @@ export default function DailyWealthRotationGroups() {
               <th className="text-left py-3 px-4">CONTRIBUTION</th>
               <th className="text-left py-3 px-4">FINE</th>
                <th className="text-left py-3 px-4">BANKDETAILS</th>
+               <th className="text-left py-3 px-4">PAYMENT REQUEST</th>
                <th className="text-left py-3 px-4">Action</th>
              
             </tr>
@@ -215,6 +218,7 @@ export default function DailyWealthRotationGroups() {
                   <td className="px-4 py-2 border">{req.controbution}</td>
                   <td className="px-4 py-2 border">{req.fine}</td>
                   <td className="px-4 py-2 border">{req.bankDetails}</td>
+                  <td className="px-4 py-2 border">{req.paymentRequest}</td>
                   <td className="px-4 py-2 border">
                     <button
                       onClick={async () => {

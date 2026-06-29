@@ -1,35 +1,38 @@
- "use client"
+"use client"
 
 import { useState, useEffect } from "react"
- import { Header } from "@/components/header"
- import { Sidebar } from "@/components/sidebar"
-import { X, Check, AlertCircle, Info } from "lucide-react"
+import { Header } from "@/components/header"
+import { Sidebar } from "@/components/sidebar"
+import { X, Check, Info } from "lucide-react"
 
 interface Notification {
   id: string
   type: "success" | "warning" | "info" | "error"
   title: string
-  message: string
+  message?: string
+  post?: string
+  user?: string
+  sender?: string
+  groupTag?: string
   timestamp: string
-  sender: string
   read: boolean
 }
 
 export default function NotificationsPage() {
+  const [viewMode, setViewMode] = useState<"individual" | "group">("individual")
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [showModal, setShowModal] = useState(false)
   const [user, setUser] = useState("")
   const [title, setTitle] = useState("")
-  const [post, setPost] = useState("")
+  const [post, setPost] = useState("") 
+  const [groupTag, setGroupTag] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  // ✅ API endpoints
-  const CREATE_URL = "api/notification-create"
-  const SHOW_URL   = "api/notification-show"
+  const CREATE_URL = viewMode === "group" ? "api/notification-grp-create" : "api/notification-create"
+  const SHOW_URL   = viewMode === "group" ? "api/notification-grp-show"   : "api/notification-show"
 
-  // ✅ Fetch notifications from SHOW endpoint
   const fetchNotifications = async () => {
     try {
       const res = await fetch(SHOW_URL, { headers: { Accept: "application/json" } })
@@ -37,24 +40,29 @@ export default function NotificationsPage() {
       if (data.responseCode === "00") {
         const mapped = data.details.map((item: any, index: number) => ({
           id: index.toString(),
-          type: "info", // you can adjust based on API data
+          type: "info",
           title: item.title,
-          message: item.content,
-          timestamp: new Date(item.time).toLocaleString(),
-          sender: item.sender,
+          message: viewMode === "individual" ? item.content : undefined,
+          post: viewMode === "group" ? item.post : undefined,
+          user: viewMode === "group" ? item.user : undefined,
+          sender: viewMode === "individual" ? item.sender : undefined,
+          groupTag: viewMode === "group" ? item.groupTag : undefined,
+          timestamp: new Date(item.time || Date.now()).toLocaleString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
           read: false,
         }))
         setNotifications(mapped)
+      } else {
+        setNotifications([])
       }
     } catch (err) {
       console.error("Failed to fetch notifications", err)
+      setNotifications([])
     }
   }
 
-  // Load notifications on page mount
   useEffect(() => {
     fetchNotifications()
-  }, [])
+  }, [viewMode])
 
   const markAsRead = (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
@@ -64,27 +72,6 @@ export default function NotificationsPage() {
     setNotifications((prev) => prev.filter((n) => n.id !== id))
   }
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "success": return <div className="w-3 h-3 bg-green-500 rounded-full" />
-      case "warning": return <AlertCircle size={20} className="text-yellow-500" />
-      case "error":   return <div className="w-3 h-3 bg-red-500 rounded-full" />
-      case "info":    return <Info size={20} className="text-blue-500" />
-      default:        return null
-    }
-  }
-
-  const getBgColor = (type: string) => {
-    switch (type) {
-      case "success": return "bg-green-50 border-l-4 border-green-500"
-      case "warning": return "bg-yellow-50 border-l-4 border-yellow-500"
-      case "error":   return "bg-red-50 border-l-4 border-red-500"
-      case "info":    return "bg-blue-50 border-l-4 border-blue-500"
-      default:        return "bg-gray-50"
-    }
-  }
-
-  // ✅ Handle create notification (POST)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -97,24 +84,28 @@ export default function NotificationsPage() {
 
     setLoading(true)
     try {
+      const body = viewMode === "group"
+        ? { user, title, post, groupTag }
+        : { sender: user, title, content: post } 
+
       const res = await fetch(CREATE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user, title, post }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok || data.responseCode !== "00") {
         throw new Error(data.error || "Failed to create notification")
       }
 
-      setSuccess("Post created successfully!")
+      setSuccess("Notification created successfully!")
       setUser("")
       setTitle("")
       setPost("")
+      setGroupTag("")
       setShowModal(false)
-
-      // ✅ Refresh notifications from SHOW endpoint
-      fetchNotifications()
+      
+      await fetchNotifications()
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -123,62 +114,95 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-[#f8fafc]">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
 
-        {/* Top bar with Create button */}
-        <div className="flex justify-end p-4 border-b bg-white">
+        {/* Top Control Bar Matching Your Image */}
+        <div className="flex justify-between items-center p-6 bg-white border-b border-gray-100">
+          <div className="flex bg-[#f1f5f9] p-1 rounded-xl">
+            <button
+              onClick={() => setViewMode("individual")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                viewMode === "individual" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"
+              }`}
+            >
+              Individual
+            </button>
+            <button
+              onClick={() => setViewMode("group")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                viewMode === "group" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"
+              }`}
+            >
+              Selected Group
+            </button>
+          </div>
+
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm tracking-wide shadow-sm"
           >
-            Create
+            Create Notification
           </button>
         </div>
 
-        <main className="flex-1 overflow-auto p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
-              <span className="text-sm text-muted-foreground">
+        {/* Notification Container Layout */}
+        <main className="flex-1 overflow-auto p-8">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold text-[#1e293b]">
+                {viewMode === "group" ? "Group Notifications" : "General Notifications"}
+              </h1>
+              <span className="text-xs bg-[#f1f5f9] text-[#64748b] px-3 py-1 rounded-full font-medium">
                 {notifications.filter((n) => !n.read).length} unread
               </span>
             </div>
 
-            <div className="space-y-3">
-              {notifications.map((notification) => (
+            <div className="space-y-4">
+              {notifications.map((n) => (
                 <div
-                  key={notification.id}
-                  className={`p-4 rounded-lg ${getBgColor(notification.type)} ${
-                    !notification.read ? "ring-1 ring-offset-0 ring-primary/20" : ""
-                  }`}
+                  key={n.id}
+                  className="bg-[#f0f7ff] border-l-4 border-blue-500 rounded-r-xl p-5 shadow-sm relative"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="mt-1">{getIcon(notification.type)}</div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground">{notification.title}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
-                      <p className="text-xs text-muted-foreground mt-2">{notification.timestamp}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Sender: {notification.sender}</p>
+                    {/* Info Circle Icon aligned like your screenshot */}
+                    <div className="mt-0.5 text-blue-500">
+                      <Info size={20} className="stroke-[2.5]" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      {!notification.read && (
-                        <button
-                          onClick={() => markAsRead(notification.id)}
-                          className="p-2 hover:bg-white/50 rounded-lg transition-colors"
-                          title="Mark as read"
-                        >
-                          <Check size={18} className="text-primary" />
+
+                    <div className="flex-1">
+                      <h3 className="font-bold text-[#0f172a] text-base">{n.title}</h3>
+                      
+                      {/* Displays content correctly based on the current tab */}
+                      {viewMode === "group" ? (
+                        <div className="mt-1 space-y-1">
+                          <p className="text-sm text-[#475569]">{n.post}</p>
+                          <p className="text-xs text-gray-400 font-medium">Sender: {n.user || "System"}</p>
+                          {n.groupTag && (
+                            <p className="text-xs text-blue-600 font-semibold">Group: {n.groupTag}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="mt-1 space-y-1">
+                          <p className="text-sm text-[#475569]">{n.message}</p>
+                          <p className="text-xs text-gray-400 font-medium">Sender: {n.sender || "System"}</p>
+                        </div>
+                      )}
+                      
+                      <p className="text-[11px] text-gray-400 mt-2 font-medium">{n.timestamp}</p>
+                    </div>
+
+                    {/* Action buttons matching position & color layout */}
+                    <div className="flex items-center gap-4 self-center pr-2">
+                      {!n.read && (
+                        <button onClick={() => markAsRead(n.id)} title="Mark as read">
+                          <Check size={18} className="text-blue-500 hover:text-blue-700 stroke-[2.5]" />
                         </button>
                       )}
-                      <button
-                        onClick={() => deleteNotification(notification.id)}
-                        className="p-2 hover:bg-white/50 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <X size={18} className="text-destructive" />
+                      <button onClick={() => deleteNotification(n.id)} title="Delete">
+                        <X size={18} className="text-red-500 hover:text-red-700 stroke-[2.5]" />
                       </button>
                     </div>
                   </div>
@@ -187,70 +211,86 @@ export default function NotificationsPage() {
             </div>
 
             {notifications.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No notifications at this time</p>
+              <div className="text-center py-12 text-gray-400">
+                No notifications found.
               </div>
             )}
           </div>
         </main>
       </div>
 
-      {/* Modal Popup */}
+      {/* Input Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md mx-4">
             <form onSubmit={handleSubmit}>
-              <h2 className="text-lg font-bold mb-4">Create Notification</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                {viewMode === "group" ? "New Group Notification" : "New General Notification"}
+              </h2>
 
-              {error && <div className="text-red-600 mb-2">{error}</div>}
-              {success && <div className="text-green-600 mb-2">{success}</div>}
+              {error && <div className="text-red-600 text-sm mb-3">{error}</div>}
 
               <div className="mb-4">
-                <label className="block mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {viewMode === "group" ? "User/Author" : "Sender Name"}
+                </label>
                 <input
-                  className="w-full border px-2 py-1 rounded"
+                  type="text"
                   value={user}
                   onChange={(e) => setUser(e.target.value)}
-                  required
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="Enter name"
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block mb-1">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input
                   type="text"
-                  className="w-full border px-2 py-1 rounded"
-                  value={title}
+                  value={title} 
                   onChange={(e) => setTitle(e.target.value)}
-                  required
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="Enter title"
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block mb-1">Message</label>
-                <input
-                  type="text"
-                  className="w-full border px-2 py-1 rounded"
+                <label className="block text-sm font-medium text-gray-700 mb-1">Content/Message</label>
+                <textarea
                   value={post}
                   onChange={(e) => setPost(e.target.value)}
-                  required
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 h-24"
+                  placeholder="Enter message details..."
                 />
               </div>
 
-              <div className="flex justify-end gap-2">
+              {viewMode === "group" && (
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Group Tag</label>
+                  <input
+                    type="text"
+                    value={groupTag}
+                    onChange={(e) => setGroupTag(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20"
+                    placeholder="Enter group tag"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2 border-t">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
+                  className="px-4 py-2 border rounded-lg text-sm text-gray-700"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg"
                 >
-                  {loading ? "Creating..." : "Create"}
+                  {loading ? "Sending..." : "Create"}
                 </button>
               </div>
             </form>
@@ -260,6 +300,3 @@ export default function NotificationsPage() {
     </div>
   )
 }
-
-// ✅ API route handlers (app/api/notification-create/route.ts)
-import { NextResponse } from "next/server"

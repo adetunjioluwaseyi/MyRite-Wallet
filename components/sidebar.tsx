@@ -306,6 +306,47 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           <span className="font-medium">Profile</span>
         </a>
 
+        {/* <button
+  onClick={() => toggleExpand("notifications")}
+  className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors text-sm ${
+    pathname === "/notifications" || pathname === "/notifications-group"
+      ? "bg-primary text-primary-foreground"
+      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+  }`}
+>
+  <span className="flex items-center gap-3">
+    <Gift className="w-5 h-5" />
+    <span className="font-medium">notifications</span>
+  </span>
+  <ChevronDown
+    className={`w-4 h-4 transition-transform ${
+      isExpanded("notifications") ? "rotate-180" : ""
+    }`}
+  />
+</button>
+
+{isExpanded("notifications") && (
+  <div className="space-y-1 mt-1 ml-2 pl-3 border-l border-muted">
+    <a
+      href="/notifications"
+      className={`text-xs block px-2 py-1 rounded hover:bg-muted ${
+        pathname === "/notifications" ? "bg-primary text-primary-foreground" : ""
+      }`}
+    >
+      All Notifications
+    </a>
+    <a
+      href="/notifications-group"
+      className={`text-xs block px-2 py-1 rounded hover:bg-muted ${
+        pathname === "/notifications-group" ? "bg-primary text-primary-foreground" : ""
+      }`}
+    >
+      Group Notifications
+    </a>
+  </div>
+)} */}
+
+
         <a
           href="/notifications"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${

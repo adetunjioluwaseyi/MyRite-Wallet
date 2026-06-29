@@ -191,7 +191,7 @@ export function InstantAccessGroups() {
       <h2 className="text-xl font-bold text-foreground mb-6">Instant Access Groups</h2>
 
       {/* Metrics card */}
-      <InstantAccessMetrics requests={requests} />
+      {/* <InstantAccessMetrics requests={requests} /> */}
 
       {/* <InstantAccessMetrics totalBalance={totalBalance} /> */}
 

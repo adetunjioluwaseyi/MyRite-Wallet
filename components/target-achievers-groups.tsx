@@ -72,7 +72,7 @@ export function TargetAchieversGroups() {
       <h2 className="text-xl font-bold text-foreground mb-6">Target Achievers Groups</h2>
 
       {/* Metrics card */}
-      <TargetAchieversMetrics totalBalance={totalBalance} />
+      {/* <TargetAchieversMetrics totalBalance={totalBalance} /> */}
 
       {/* Table */}
       <table className="w-full mt-6">
