@@ -32,6 +32,9 @@ export default function NotificationsGroupPage() {
   // ✅ API endpoints
   const CREATE_URL = "api/notification-grp-create"
   const SHOW_URL   = "api/notification-grp-show"
+  const IND_CREATE_URL = "api/notification-create"
+  const IND_SHOW_URL = "api/notification-show"
+
 
   // ✅ Fetch notifications from SHOW endpoint
   const fetchNotifications = async () => {
@@ -91,7 +94,46 @@ export default function NotificationsGroupPage() {
     }
   }
 
-  // ✅ Handle create notification (POST)
+  // ✅ Handle create  individual notification (POST)
+  const handleSubmit_ind = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setSuccess("")
+
+    if (!title.trim()) {
+      setError("Title is required")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch(IND_CREATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user, title, post }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.responseCode !== "00") {
+        throw new Error(data.error || "Failed to create notification")
+      }
+
+      setSuccess("Post created successfully!")
+      setUser("")
+      setTitle("")
+      setPost("")
+      // setGroupTag("")
+      setShowModal(false)
+
+      // ✅ Refresh notifications from SHOW endpoint
+      fetchNotifications()
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ✅ Handle create  group notification (POST)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")

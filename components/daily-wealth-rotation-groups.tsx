@@ -18,7 +18,7 @@ interface UnifiedRow {
   paymentRequest: string;
 }
  
-interface Group {
+export interface Group {
   groupName: string;
   groupCode: string;
 }

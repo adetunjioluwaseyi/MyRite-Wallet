@@ -4,11 +4,13 @@ import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { X, Check, Info } from "lucide-react"
+import { Group } from "@/components/daily-wealth-rotation-groups"
 
 interface Notification {
   id: string
   type: "success" | "warning" | "info" | "error"
   title: string
+  groupName: string;
   message?: string
   post?: string
   user?: string
@@ -17,6 +19,21 @@ interface Notification {
   timestamp: string
   read: boolean
 }
+
+interface Group {
+  groupName: string;
+  groupCode: string;
+}
+
+const safeJson = async (res: Response) => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("Server did not return valid JSON");
+  }
+};
 
 export default function NotificationsPage() {
   const [viewMode, setViewMode] = useState<"individual" | "group">("individual")
@@ -29,9 +46,42 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedGroupName, setSelectedGroupName] = useState("");
+  const [groups, setGroups] = useState<Group[]>([]);
 
-  const CREATE_URL = viewMode === "group" ? "api/notification-grp-create" : "api/notification-create"
+   const CREATE_URL = viewMode === "group" ? "api/notification-grp-create" : "api/notification-create"
   const SHOW_URL   = viewMode === "group" ? "api/notification-grp-show"   : "api/notification-show"
+  // const CREATE_URL = "api/notification-grp-create" 
+  // const SHOW_URL = "api/notification-grp-show" 
+  const IND_CREATE_URL = "api/notification-create"
+  // const IND_SHOW_URL = "api/notification-show"
+
+
+  // all group names
+
+  // Step 1: Fetch groups for dropdown
+    useEffect(() => {
+      setCurrentPage(1); // Reset to first page when group changes or new data loads
+      const fetchGroups = async () => {
+        try {
+          const res = await fetch("/api/all-groups");
+          const data = await safeJson(res);
+   
+          const formatted: Group[] = (data.details || []).map((item: any) => ({
+            groupName: item.grouptag ?? "",
+            groupCode: item.groupCode ?? "",
+          }));
+   
+          setGroups(formatted);
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : "Failed to fetch groups";
+          setError(message);
+        }
+      };
+      fetchGroups();
+    }, []);
 
   const fetchNotifications = async () => {
     try {
@@ -42,8 +92,10 @@ export default function NotificationsPage() {
           id: index.toString(),
           type: "info",
           title: item.title,
-          message: viewMode === "individual" ? item.content : undefined,
+          // message: viewMode === "individual" ? item.content : undefined,
           post: viewMode === "group" ? item.post : undefined,
+          groupName: item.groupName ?? selectedGroupName ?? "N/A",
+          // post: viewMode === "individual" ? item.post : undefined,
           user: viewMode === "group" ? item.user : undefined,
           sender: viewMode === "individual" ? item.sender : undefined,
           groupTag: viewMode === "group" ? item.groupTag : undefined,
@@ -112,6 +164,47 @@ export default function NotificationsPage() {
       setLoading(false)
     }
   }
+// individual ENDPOINT 
+  const handleSubmit_ind = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setSuccess("")
+
+    if (!title.trim()) {
+      setError("Title is required")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const body = viewMode === "individual"
+        ? { user, title, post }
+        : { sender: user, title, content: post } 
+
+      const res = await fetch(IND_CREATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok || data.responseCode !== "00") {
+        throw new Error(data.error || "Failed to create notification")
+      }
+
+      setSuccess("Notification created successfully!")
+      setUser("")
+      setTitle("")
+      setPost("")
+      // setGroupTag("")
+      setShowModal(false)
+      
+      await fetchNotifications()
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="flex h-screen bg-[#f8fafc]">
@@ -136,7 +229,7 @@ export default function NotificationsPage() {
                 viewMode === "group" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"
               }`}
             >
-              Selected Group
+             Group 
             </button>
           </div>
 
@@ -223,7 +316,7 @@ export default function NotificationsPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md mx-4">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={viewMode === "group" ? handleSubmit : handleSubmit_ind}>
               <h2 className="text-lg font-bold text-gray-900 mb-4">
                 {viewMode === "group" ? "New Group Notification" : "New General Notification"}
               </h2>
@@ -264,7 +357,7 @@ export default function NotificationsPage() {
                 />
               </div>
 
-              {viewMode === "group" && (
+              {/* {viewMode === "group" && (
                 <div className="mb-5">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Group Tag</label>
                   <input
@@ -275,7 +368,27 @@ export default function NotificationsPage() {
                     placeholder="Enter group tag"
                   />
                 </div>
-              )}
+              )} */}
+
+               {/* GroupName Dropdown */}
+      {viewMode === "group" && (
+      <div className="mb-4">
+        <label className="block mb-1 text-sm font-medium">Group Name</label>
+        <select
+        // value={groupTag}
+        value={selectedGroupName}
+          onChange={e => setSelectedGroupName(e.target.value)}
+          className="border px-2 py-1 rounded min-w-[200px]"
+        >
+          <option value="">Select Group</option>
+          {groups.map(g => (
+            <option key={g.groupCode} value={g.groupName}>
+              {g.groupName}
+            </option>
+          ))}
+        </select>
+      </div>
+      )}
 
               <div className="flex justify-end gap-2 pt-2 border-t">
                 <button

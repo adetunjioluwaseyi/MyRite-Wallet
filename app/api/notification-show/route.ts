@@ -1,19 +1,4 @@
-// import { NextResponse } from "next/server"
 
-// export async function GET(req: Request) {
-//   const { searchParams } = new URL(req.url)
-//   const search = searchParams.get("search")
-
-//   const res = await fetch(
-//     `http://94.72.111.23:2000/myritewallet/v1/ADMIN/ALL-CUSTOMERS/VIEW?search=${search}`
-//   )
-//   const data = await res.json()
-
-//   return NextResponse.json(data)
-// }
-
-
-// app/api/pending/route.ts
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -22,7 +7,7 @@ export async function GET() {
       method: "GET",
       headers: { accept: "application/json" },
     });
-
+ 
     if (!response.ok) {
       return NextResponse.json(
         { error: `Backend request failed with ${response.status}` },

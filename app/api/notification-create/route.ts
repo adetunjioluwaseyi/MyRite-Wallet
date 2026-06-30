@@ -61,6 +61,7 @@ export async function POST(req: Request) {
       ...rest,
     };
     if (title) payload.title = title;
+    // if (post) payload.post = post;
 
     // Log payload for debugging
     console.log("Payload sent to backend API:", payload);
