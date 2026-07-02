@@ -74,7 +74,7 @@ export async function POST(req: Request) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: `Backend request failed with ${response.status}` },
+         { error: `Backend request failed with ${response.status}` },
         { status: response.status }
       );
     }

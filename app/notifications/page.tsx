@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { X, Check, Info } from "lucide-react"
-import { Group } from "@/components/daily-wealth-rotation-groups"
+// import { Group } from "@/components/daily-wealth-rotation-groups"
 
 interface Notification {
   id: string
@@ -94,11 +94,12 @@ export default function NotificationsPage() {
           title: item.title,
           // message: viewMode === "individual" ? item.content : undefined,
           post: viewMode === "group" ? item.post : undefined,
-          groupName: item.groupName ?? selectedGroupName ?? "N/A",
+          // groupName: item.groupName ?? selectedGroupName ?? "N/A",
           // post: viewMode === "individual" ? item.post : undefined,
           user: viewMode === "group" ? item.user : undefined,
           sender: viewMode === "individual" ? item.sender : undefined,
           groupTag: viewMode === "group" ? item.groupTag : undefined,
+          groupName: viewMode === "group" ? item.groupName : undefined,
           timestamp: new Date(item.time || Date.now()).toLocaleString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
           read: false,
         }))
@@ -273,9 +274,12 @@ export default function NotificationsPage() {
                         <div className="mt-1 space-y-1">
                           <p className="text-sm text-[#475569]">{n.post}</p>
                           <p className="text-xs text-gray-400 font-medium">Sender: {n.user || "System"}</p>
-                          {n.groupTag && (
-                            <p className="text-xs text-blue-600 font-semibold">Group: {n.groupTag}</p>
+                          {n.groupName && (
+                            <p className="text-xs text-blue-600 font-semibold">Group: {n.groupName}</p>
                           )}
+                          {/* {n.groupTag && (
+                            <p className="text-xs text-blue-600 font-semibold">Group: {n.groupTag}</p>
+                          )} */}
                         </div>
                       ) : (
                         <div className="mt-1 space-y-1">
@@ -376,8 +380,8 @@ export default function NotificationsPage() {
         <label className="block mb-1 text-sm font-medium">Group Name</label>
         <select
         // value={groupTag}
-        value={selectedGroupName}
-          onChange={e => setSelectedGroupName(e.target.value)}
+        value={groupTag}
+          onChange={e => setGroupTag(e.target.value)}
           className="border px-2 py-1 rounded min-w-[200px]"
         >
           <option value="">Select Group</option>
