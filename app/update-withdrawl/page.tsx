@@ -133,7 +133,7 @@ export default function  UpdateWithdrawal() {
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-card rounded-lg border border-border p-6">
             <h2 className="text-xl font-bold text-foreground mb-6">
-             View All Withdrawals
+              Withdrawals update
             </h2>
 
             {/* GroupName Dropdown */}
