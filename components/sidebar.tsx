@@ -225,6 +225,12 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
               <a href="/seerbit" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                Seerbit Transactions 
               </a>
+              <a href="/view-withdraw" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+               view withdrawals
+              </a>
+              <a href="/update-withdrawl" className="text-xs block px-2 py-1 rounded hover:bg-muted">
+               update withdrawals
+              </a>
               {/* <a href="/group" className="text-xs block px-2 py-1 rounded hover:bg-muted">
                 All Groups
               </a> */}
