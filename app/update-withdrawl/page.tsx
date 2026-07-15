@@ -12,6 +12,7 @@ interface UnifiedRow {
   email: string;
  status: string;
  createdAt: string;
+ bankDetails: string;
 requestId: string;
   groupCode?: string;
    groupName: string;
@@ -100,6 +101,7 @@ export default function  UpdateWithdrawal() {
           email: item.email ?? "N/A",
           status: item.status ?? "N/A",
           createdAt: item.createdAt ?? "N/A",
+          bankDetails: item.bankDetails ?? "N/A",
           requestId: item.requestId ?? item.requestID ?? "N/A",
           groupCode: item.groupCode ?? "N/A",
         }));
@@ -165,7 +167,7 @@ export default function  UpdateWithdrawal() {
                     <th className="text-left py-3 px-4">EMAIL</th>
                     <th className="text-left py-3 px-4">STATUS</th>
                      <th className="text-left py-3 px-4">CREATED AT</th>
-                    {/* <th className="text-left py-3 px-4">GROUPTAG</th> */}
+                    <th className="text-left py-3 px-4">BANK DETAILS</th> 
                     <th className="text-left py-3 px-4">REQUEST ID</th>
                     <th className="text-left py-3 px-4">ACTION</th>
                     {/* <th className="text-left py-3 px-4">GROUP CODE</th> */}
@@ -180,6 +182,7 @@ export default function  UpdateWithdrawal() {
                       <td className="px-4 py-2 border">{req.email}</td>
                       <td className="px-4 py-2 border">{req.status}</td>
                       <td className="px-4 py-2 border">{req.createdAt}</td>
+                      <td className="px-4 py-2 border">{req.bankDetails}</td>
                       <td className="px-4 py-2 border">{req.requestId}</td>
                       <td className="px-4 py-2 border">
                         <button
