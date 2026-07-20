@@ -8,7 +8,8 @@ interface JoinRequest {
   id: string
   name: string
   mobile: string
-  salary: number   // ✅ make salary numeric
+  balance: string   // ✅ make balance numeric
+  salary: string   // ✅ make salary numeric
   groupCode: string
 }
 
@@ -43,9 +44,12 @@ export function TargetAchieversGroups() {
     id: item.mobile ?? "",
     name: item.name ?? "Unknown",
     mobile: item.mobile ?? "N/A",
+    salary: item.salary ?? "N/A",
+    balance: item.balance ?? "N/A",
     // Convert safely: only parse if it's a valid number string
-    salary: item.salary && !isNaN(Number(item.salary)) ? Number(item.salary) : 0,
-    groupCode: item.groupCode ?? "N/A",
+    // salary: item.salary && !isNaN(Number(item.salary)) ? Number(item.salary) : 0,
+    // balance: item.balance && !isNaN(Number(item.balance)) ? Number(item.balance) : 0,
+    // groupCode: item.groupCode ?? "N/A",
     targetName: item.targetName ?? "N/A",
   }
 })
@@ -62,7 +66,7 @@ export function TargetAchieversGroups() {
     fetchRequests()
   }, [])
 
-  const totalBalance = requests.reduce((sum, req) => sum + req.salary, 0)
+  const totalBalance = requests.reduce((sum, req) => sum + Number(req.salary), 0)
 
   if (loading) return <p className="p-6">Loading requests...</p>
   if (error) return <p className="p-6 text-red-600">Error: {error}</p>
@@ -81,7 +85,7 @@ export function TargetAchieversGroups() {
             <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">NAME</th>
             <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">MOBILE</th>
             <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">SALARY</th>
-            <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">GROUPCODE</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">BALANCE</th>
             <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">TARGETNAME</th>
           </tr>
         </thead>
@@ -90,8 +94,8 @@ export function TargetAchieversGroups() {
             <tr key={req.id}>
               <td className="px-4 py-2 border">{req.name}</td>
               <td className="px-4 py-2 border">{req.mobile}</td>
-              <td className="px-4 py-2 border">{req.salary.toLocaleString()}</td>
-              <td className="px-4 py-2 border">{req.groupCode}</td>
+              <td className="px-4 py-2 border">{req.salary}</td>
+              <td className="px-4 py-2 border">{req.balance}</td>
               <td className="px-4 py-2 border">{req.targetName}</td>
             </tr>
           ))}

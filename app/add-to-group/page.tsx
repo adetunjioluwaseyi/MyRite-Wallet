@@ -128,23 +128,23 @@ export default function AddToGroupPage() {
     )
 
     // Redirect logic
-    switch ((req.groupMode || "").toLowerCase()) {
-      case "wealth":
-        router.push("/wealth-rotation/overview")
-        break
-      case "daily":
-        router.push("/wealth-rotation/daily")
-        break
-      case "weekly":
-        router.push("/wealth-rotation/weekly")
-        break
-      case "monthly":
-        router.push("/wealth-rotation/monthly")
-        break
-      default:
-        console.warn("Unknown groupMode, no redirect performed")
-        break
-    }
+    // switch ((req.groupMode || "").toLowerCase()) {
+    //   case "wealth":
+    //     router.push("/wealth-rotation/overview")
+    //     break
+    //   case "daily":
+    //     router.push("/wealth-rotation/daily")
+    //     break
+    //   case "weekly":
+    //     router.push("/wealth-rotation/weekly")
+    //     break
+    //   case "monthly":
+    //     router.push("/wealth-rotation/monthly")
+    //     break
+    //   default:
+    //     console.warn("Unknown groupMode, no redirect performed")
+    //     break
+    // }
   } catch (err: any) {
     const message = err?.message || "Network error"
     console.error("Approve failed:", err)
