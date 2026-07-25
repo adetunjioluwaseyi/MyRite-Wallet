@@ -46,10 +46,6 @@ export function TargetAchieversGroups() {
     mobile: item.mobile ?? "N/A",
     salary: item.salary ?? "N/A",
     balance: item.balance ?? "N/A",
-    // Convert safely: only parse if it's a valid number string
-    // salary: item.salary && !isNaN(Number(item.salary)) ? Number(item.salary) : 0,
-    // balance: item.balance && !isNaN(Number(item.balance)) ? Number(item.balance) : 0,
-    // groupCode: item.groupCode ?? "N/A",
     targetName: item.targetName ?? "N/A",
   }
 })
