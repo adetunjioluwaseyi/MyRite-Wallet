@@ -300,7 +300,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
           <span className="font-medium">Reports</span>
         </a> */}
 
-        {/* <a
+        <a
           href="/admin-edit"
           className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
             pathname.includes("admin-edit")
@@ -310,7 +310,7 @@ export function Sidebar({ currentPage }: { currentPage?: string }) {
         >
           <Users className="w-5 h-5" />
           <span className="font-medium">Profile</span>
-        </a> */}
+        </a>
 
         {/* <button
   onClick={() => toggleExpand("notifications")}
