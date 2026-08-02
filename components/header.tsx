@@ -71,7 +71,7 @@
 "use client"
 
 import { Suspense, useEffect, useState, type FormEvent } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Search, Bell, ChevronDown } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -80,6 +80,7 @@ import { MobileSidebar } from "@/components/mobile-sidebar"
 function HeaderSearchForm() {
   const [searchTerm, setSearchTerm] = useState("")
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -93,7 +94,14 @@ function HeaderSearchForm() {
     const trimmedQuery = searchTerm.trim()
     if (!trimmedQuery) return
 
-    router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`)
+    const scope = pathname && pathname !== "/" ? pathname : ""
+    const query = new URLSearchParams({ q: trimmedQuery })
+
+    if (scope) {
+      query.set("scope", scope)
+    }
+
+    router.push(`/search?${query.toString()}`)
   }
 
   return (

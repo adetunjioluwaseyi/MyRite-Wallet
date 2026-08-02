@@ -18,6 +18,13 @@ export function TargetAchieversGroups() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Search State
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 7
+
   useEffect(() => {
     const fetchRequests = async () => {
       try {
@@ -37,19 +44,19 @@ export function TargetAchieversGroups() {
         // }))
 
         const formatted: JoinRequest[] = items.map((item: any) => {
-  // Log the raw salary value from the API
-  console.log("Raw salary from API:", item.salary, "Type:", typeof item.salary)
+          // Log the raw salary value from the API
+          console.log("Raw salary from API:", item.salary, "Type:", typeof item.salary)
 
-  return {
-    id: item.mobile ?? "",
-    name: item.name ?? "Unknown",
-    mobile: item.mobile ?? "N/A",
-    salary: item.salary ?? "N/A",
-    balance: item.balance ?? "N/A",
-    targetName: item.targetName ?? "N/A",
-  }
-})
-
+          return {
+            id: item.mobile ?? "",
+            name: item.name ?? "Unknown",
+            mobile: item.mobile ?? "N/A",
+            salary: item.salary ?? "N/A",
+            balance: item.balance ?? "N/A",
+            targetName: item.targetName ?? "N/A",
+            groupCode: item.groupCode ?? "N/A",
+          }
+        })
 
         setRequests(formatted)
       } catch (err: any) {
@@ -61,6 +68,25 @@ export function TargetAchieversGroups() {
 
     fetchRequests()
   }, [])
+
+  // Filter requests based on search term
+  const filteredRequests = requests.filter((req) => {
+    const term = searchTerm.toLowerCase()
+    return (
+      req.name.toLowerCase().includes(term) ||
+      req.mobile.toLowerCase().includes(term) ||
+      req.targetName.toLowerCase().includes(term) ||
+      req.salary.toLowerCase().includes(term) ||
+      req.balance.toLowerCase().includes(term)
+    )
+  })
+
+  // Calculate pagination properties
+  const totalPages = Math.ceil(filteredRequests.length / pageSize) || 1
+  const paginatedRequests = filteredRequests.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
 
   const totalBalance = requests.reduce((sum, req) => sum + Number(req.salary), 0)
 
@@ -74,6 +100,21 @@ export function TargetAchieversGroups() {
       {/* Metrics card */}
       {/* <TargetAchieversMetrics totalBalance={totalBalance} /> */}
 
+      {/* Search Input Control */}
+      <div className="mb-6 max-w-md">
+        <label className="block mb-1 text-sm font-medium">Search</label>
+        <input
+          type="text"
+          placeholder="Search by name, mobile, target name..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value)
+            setCurrentPage(1) // Reset to page 1 on query change
+          }}
+          className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-900"
+        />
+      </div>
+
       {/* Table */}
       <table className="w-full mt-6">
         <thead>
@@ -86,17 +127,48 @@ export function TargetAchieversGroups() {
           </tr>
         </thead>
         <tbody>
-          {requests.map((req) => (
-            <tr key={req.id}>
-              <td className="px-4 py-2 border">{req.name}</td>
-              <td className="px-4 py-2 border">{req.mobile}</td>
-              <td className="px-4 py-2 border">{req.salary}</td>
-              <td className="px-4 py-2 border">{req.balance}</td>
-              <td className="px-4 py-2 border">{req.targetName}</td>
+          {paginatedRequests.length > 0 ? (
+            paginatedRequests.map((req) => (
+              <tr key={req.id}>
+                <td className="px-4 py-2 border">{req.name}</td>
+                <td className="px-4 py-2 border">{req.mobile}</td>
+                <td className="px-4 py-2 border">{req.salary}</td>
+                <td className="px-4 py-2 border">{req.balance}</td>
+                <td className="px-4 py-2 border">{req.targetName}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={5} className="text-center py-6 text-muted-foreground">
+                No records matching &quot;{searchTerm}&quot;
+              </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
+
+      {/* Pagination Controls */}
+      {filteredRequests.length > pageSize && (
+        <div className="flex items-center justify-center gap-4 mt-4">
+          <button
+            className="px-3 py-1 rounded border disabled:opacity-50"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="px-3 py-1 rounded border disabled:opacity-50"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   )
 }

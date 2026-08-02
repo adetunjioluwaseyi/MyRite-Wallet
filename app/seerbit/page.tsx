@@ -8,11 +8,11 @@ interface UnifiedRow {
   createdAt: string;
   mobile: string;
   email: string;
- amount: string;
- status: string;
+  amount: string;
+  status: string;
   transactionId: string;
   groupCode?: string;
-   groupName: string;
+  groupName: string;
   groupTag: string;
 }
 
@@ -38,11 +38,30 @@ export default function Seerbit() {
   const [selectedGroupName, setSelectedGroupName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 7;
 
-  const totalPages = Math.ceil(rows.length / pageSize);
-  const paginatedRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  // Filter rows based on search term across all fields
+  const filteredRows = rows.filter((row) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      row.createdAt.toLowerCase().includes(term) ||
+      row.mobile.toLowerCase().includes(term) ||
+      row.email.toLowerCase().includes(term) ||
+      row.amount.toLowerCase().includes(term) ||
+      row.status.toLowerCase().includes(term) ||
+      row.transactionId.toLowerCase().includes(term) ||
+      row.groupTag.toLowerCase().includes(term) ||
+      (row.groupCode && row.groupCode.toLowerCase().includes(term))
+    );
+  });
+
+  const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+  const paginatedRows = filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Step 1: Fetch groups for dropdown
   useEffect(() => {
@@ -131,6 +150,20 @@ export default function Seerbit() {
               All Seerbit transaction details
             </h2>
 
+            {/* Search Input Control */}
+            <div className="mb-4 max-w-md">
+              <input
+                type="text"
+                placeholder="Search transactions by email"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1); // Reset page on query change
+                }}
+                className="w-full border px-3 py-2 rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
             {/* GroupName Dropdown */}
             {/* <div className="mb-4">
               <label className="block mb-1 text-sm font-medium">Group Name</label>
@@ -165,25 +198,33 @@ export default function Seerbit() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedRows.map((req, idx) => (
-                    <tr key={idx}>
-                      <td className="px-4 py-2 border">{req.createdAt}</td>
-                      <td className="px-4 py-2 border">{req.mobile}</td>
-                      <td className="px-4 py-2 border">{req.email}</td>
-                       <td className="px-4 py-2 border">{req.amount}</td>
-                      <td className="px-4 py-2 border">{req.status}</td>
-                      <td className="px-4 py-2 border">{req.transactionId}</td>
-                      {/* <td className="px-4 py-2 border">{req.groupTag}</td> */}
-                      
-                      {/* <td className="px-4 py-2 border">{req.groupCode}</td> */}
+                  {paginatedRows.length > 0 ? (
+                    paginatedRows.map((req, idx) => (
+                      <tr key={idx}>
+                        <td className="px-4 py-2 border">{req.createdAt}</td>
+                        <td className="px-4 py-2 border">{req.mobile}</td>
+                        <td className="px-4 py-2 border">{req.email}</td>
+                        <td className="px-4 py-2 border">{req.amount}</td>
+                        <td className="px-4 py-2 border">{req.status}</td>
+                        <td className="px-4 py-2 border">{req.transactionId}</td>
+                        {/* <td className="px-4 py-2 border">{req.groupTag}</td> */}
+                        
+                        {/* <td className="px-4 py-2 border">{req.groupCode}</td> */}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="text-center py-6 text-gray-500 border">
+                        No records matching &quot;{searchTerm}&quot;
+                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
 
             {/* Pagination */}
-            {rows.length > pageSize && (
+            {filteredRows.length > pageSize && (
               <div className="flex items-center justify-center gap-4 mt-4">
                 <button
                   className="px-3 py-1 rounded border disabled:opacity-50"

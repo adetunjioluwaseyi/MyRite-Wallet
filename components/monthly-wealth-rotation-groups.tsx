@@ -40,7 +40,7 @@ export function MonthlyWealthRotationGroups() {
   const [error, setError] = useState<string | null>(null);
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 7;
+  const pageSize = 8;
  
   // Calculate paginated rows
   const totalPages = Math.ceil(rows.length / pageSize);

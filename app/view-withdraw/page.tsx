@@ -9,12 +9,12 @@ interface UnifiedRow {
   mobile: string;
   amount: string;
   email: string;
- status: string;
- createdAt: string;
- bankDetails: string;
-requestId: string;
+  status: string;
+  createdAt: string;
+  bankDetails: string;
+  requestId: string;
   groupCode?: string;
-   groupName: string;
+  groupName: string;
   groupTag: string;
 }
 
@@ -40,11 +40,30 @@ export default function ViewWithdraw() {
   const [selectedGroupName, setSelectedGroupName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 7;
 
-  const totalPages = Math.ceil(rows.length / pageSize);
-  const paginatedRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  // Filter rows based on search term across all table fields
+  const filteredRows = rows.filter((row) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      row.name.toLowerCase().includes(term) ||
+      row.mobile.toLowerCase().includes(term) ||
+      row.amount.toLowerCase().includes(term) ||
+      row.email.toLowerCase().includes(term) ||
+      row.status.toLowerCase().includes(term) ||
+      row.createdAt.toLowerCase().includes(term) ||
+      row.bankDetails.toLowerCase().includes(term) ||
+      row.requestId.toLowerCase().includes(term)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+  const paginatedRows = filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Step 1: Fetch groups for dropdown
   useEffect(() => {
@@ -98,10 +117,9 @@ export default function ViewWithdraw() {
           email: item.email ?? "N/A",
           status: item.status ?? "N/A",
           createdAt: item.createdAt ?? "N/A",
-           bankDetails: item.bankDetails ?? "N/A",
+          bankDetails: item.bankDetails ?? "N/A",
           requestId: item.requestId ?? "N/A",
           groupCode: item.groupCode ?? "N/A",
-         
         }));
         {/* createdAt, mobile, email, amount, status, transactionId */}
 
@@ -133,8 +151,22 @@ export default function ViewWithdraw() {
         <main className="flex-1 overflow-auto p-6">
           <div className="bg-card rounded-lg border border-border p-6">
             <h2 className="text-xl font-bold text-foreground mb-6">
-             View All Withdrawals
+              View All Withdrawals
             </h2>
+
+            {/* Search Input */}
+            <div className="mb-4 max-w-md">
+              <input
+                type="text"
+                placeholder="Search withdrawals by name..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1); // Reset page on query change
+                }}
+                className="w-full border px-3 py-2 rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
             {/* GroupName Dropdown */}
             {/* <div className="mb-4">
@@ -161,38 +193,43 @@ export default function ViewWithdraw() {
                     {/* createdAt, mobile, email, amount, status, transactionId */}
                     <th className="text-left py-3 px-4">NAME</th>
                     <th className="text-left py-3 px-4">MOBILE</th>
-                     <th className="text-left py-3 px-4">AMOUNT</th>
+                    <th className="text-left py-3 px-4">AMOUNT</th>
                     <th className="text-left py-3 px-4">EMAIL</th>
                     <th className="text-left py-3 px-4">STATUS</th>
-                     <th className="text-left py-3 px-4">CREATED AT</th>
-                   <th className="text-left py-3 px-4">BANK DETAILS</th>
+                    <th className="text-left py-3 px-4">CREATED AT</th>
+                    <th className="text-left py-3 px-4">BANK DETAILS</th>
                     <th className="text-left py-3 px-4">REQUEST ID</th>
-                    
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedRows.map((req, idx) => (
-                    <tr key={idx}>
-                      <td className="px-4 py-2 border">{req.name}</td>
-                      <td className="px-4 py-2 border">{req.mobile}</td>
-                       <td className="px-4 py-2 border">{req.amount}</td>
-                      <td className="px-4 py-2 border">{req.email}</td>
-                      <td className="px-4 py-2 border">{req.status}</td>
-                      <td className="px-4 py-2 border">{req.createdAt}</td>
-                      <td className="px-4 py-2 border">{req.bankDetails}</td>
-                      <td className="px-4 py-2 border">{req.requestId}</td>
-                      
-                      {/* <td className="px-4 py-2 border">{req.groupTag}</td> */}
-                      
-                      {/* <td className="px-4 py-2 border">{req.groupCode}</td> */}
+                  {paginatedRows.length > 0 ? (
+                    paginatedRows.map((req, idx) => (
+                      <tr key={idx}>
+                        <td className="px-4 py-2 border">{req.name}</td>
+                        <td className="px-4 py-2 border">{req.mobile}</td>
+                        <td className="px-4 py-2 border">{req.amount}</td>
+                        <td className="px-4 py-2 border">{req.email}</td>
+                        <td className="px-4 py-2 border">{req.status}</td>
+                        <td className="px-4 py-2 border">{req.createdAt}</td>
+                        <td className="px-4 py-2 border">{req.bankDetails}</td>
+                        <td className="px-4 py-2 border">{req.requestId}</td>
+                        {/* <td className="px-4 py-2 border">{req.groupTag}</td> */}
+                        {/* <td className="px-4 py-2 border">{req.groupCode}</td> */}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="text-center py-6 text-gray-500 border">
+                        No records matching &quot;{searchTerm}&quot;
+                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
 
             {/* Pagination */}
-            {rows.length > pageSize && (
+            {filteredRows.length > pageSize && (
               <div className="flex items-center justify-center gap-4 mt-4">
                 <button
                   className="px-3 py-1 rounded border disabled:opacity-50"
