@@ -38,14 +38,14 @@ export function WeeklyWealthRotationGroups() {
   const [selectedGroupName, setSelectedGroupName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 7;
+  
+
+  // Search & Pagination state
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 7;
  
-  // Calculate paginated rows
-  const totalPages = Math.ceil(rows.length / pageSize);
-  const paginatedRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
- 
+  
   // Step 1: Fetch groups for dropdown
   useEffect(() => {
     setCurrentPage(1); // Reset to first page when group changes or new data loads
@@ -77,7 +77,7 @@ export function WeeklyWealthRotationGroups() {
         let response;
         if (!selectedGroupName) {
           // All groups → GET
-          response = await fetch("/api/pending/weekly", { method: "GET" });
+          response = await fetch("/api/pending/daily", { method: "GET" });
         } else {
           // Specific group → POST WITH-SLOT
           response = await fetch(
@@ -117,10 +117,40 @@ export function WeeklyWealthRotationGroups() {
     };
  
     fetchRequests();
-  }, [selectedGroupName]); // runs both when selecting and clearing
- 
+  }, [selectedGroupName]);
+  
+  // Filter rows based on search term across all fields
+  const filteredRows = rows.filter((row) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      row.name.toLowerCase().includes(term) ||
+      row.mobile.toLowerCase().includes(term) ||
+      row.groupCode.toLowerCase().includes(term) ||
+      row.groupName.toLowerCase().includes(term) ||
+      row.groupId.toLowerCase().includes(term) ||
+      row.collectionDate.toLowerCase().includes(term) ||
+      row.payoutStatus.toLowerCase().includes(term) ||
+      row.controbution.toLowerCase().includes(term) ||
+      row.fine.toLowerCase().includes(term) ||
+      row.bankDetails.toLowerCase().includes(term)
+    );
+  });
+
+  // Calculate paginated rows off filtered set
+  const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+  const paginatedRows = filteredRows.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // Handle search term input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
   if (loading) return <p className="p-6">Loading requests...</p>;
-  if (error) return <p className="p-6 text-red-600">Error: {error}</p>;
+  if (error) return <p className="p-6 text-red-600">Error: {error}</p>;// runs both when selecting and clearing
  
   return (
     <div className="bg-card rounded-lg border border-border p-6">
@@ -144,6 +174,18 @@ export function WeeklyWealthRotationGroups() {
           ))}
         </select>
       </div>
+
+      {/* Search Input Control */}
+        <div className="flex-1 max-w-md">
+          <label className="block mb-1 text-sm font-medium">Search</label>
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-900"
+          />
+        </div>
  
       {/* Unified Table with horizontal scroll and pagination */}
       <div className="w-full overflow-x-auto">
@@ -191,9 +233,9 @@ export function WeeklyWealthRotationGroups() {
         </table>
       </div>
  
-      {/* Pagination Controls */}
-      {rows.length > pageSize && (
-        <div className="flex items-center justify-center gap-4 mt-4">
+       {/* Pagination Controls */}
+      {filteredRows.length > pageSize && (
+        <div className="flex items-center justify-center gap-4 mt-6">
           <button
             className="px-3 py-1 rounded border disabled:opacity-50"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
