@@ -23,16 +23,16 @@ export default function Dashboard() {
 
             <WalletsOverview />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div className="lg:col-span-2">
                 <WealthRotationInsights />
               </div>
-            </div>
+            </div> */}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <TopWallets />
               <Notifications />
-            </div>
+            </div> */}
           </div>
         </main>
       </div>

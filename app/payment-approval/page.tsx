@@ -37,11 +37,16 @@ export default function PaymentApproval() {
   const [selectedGroupName, setSelectedGroupName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 7;
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const pageSize = 7;
 
-  const totalPages = Math.ceil(rows.length / pageSize);
-  const paginatedRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  // Search & Pagination state
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 7;
+
+  // const totalPages = Math.ceil(rows.length / pageSize);
+  // const paginatedRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Step 1: Fetch groups for dropdown
   useEffect(() => {
@@ -108,6 +113,34 @@ export default function PaymentApproval() {
     fetchRequests();
   }, [selectedGroupName]);
 
+  // Filter rows based on search term across all fields
+  const filteredRows = rows.filter((row) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      row.groupName.toLowerCase().includes(term) ||
+      row.groupTag.toLowerCase().includes(term) ||
+      row.paymentDate.toLowerCase().includes(term) ||
+      row.mobile.toLowerCase().includes(term) ||
+      row.status.toLowerCase().includes(term) ||
+      row.amount.toLowerCase().includes(term) ||
+      row.reference.toLowerCase().includes(term) ||
+      row.groupCode.toLowerCase().includes(term)
+    );
+  });
+
+  // Calculate paginated rows off filtered set
+  const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+  const paginatedRows = filteredRows.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // Handle search term input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
   if (loading) return <p className="p-6">Loading requests...</p>;
   if (error) return <p className="p-6 text-red-600">Error: {error}</p>;
 
@@ -145,6 +178,18 @@ export default function PaymentApproval() {
               </select>
             </div>
 
+            {/* Search Input Control */}
+        <div className="flex-1 max-w-md">
+          <label className="block mb-1 text-sm font-medium">Search</label>
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-900"
+          />
+        </div>
+
             {/* Table */}
             <div className="w-full overflow-x-auto">
               <table className="min-w-max w-full">
@@ -175,31 +220,32 @@ export default function PaymentApproval() {
               </table>
             </div>
 
-            {/* Pagination */}
-            {rows.length > pageSize && (
-              <div className="flex items-center justify-center gap-4 mt-4">
-                <button
-                  className="px-3 py-1 rounded border disabled:opacity-50"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
-                  Prev
-                </button>
-                <span>
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  className="px-3 py-1 rounded border disabled:opacity-50"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            )}
+            {/* Pagination Controls */}
+      {filteredRows.length > pageSize && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <button
+            className="px-3 py-1 rounded border disabled:opacity-50"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="px-3 py-1 rounded border disabled:opacity-50"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
           </div>
         </main>
       </div>
+      
     </div>
   );
 }
